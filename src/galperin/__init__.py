@@ -3,5 +3,5 @@ def calculate_center(left, right):
 
 
 def cube_side(left, right):
-    return right[0]-left[0]
+    return right[0] - left[0]
 
