@@ -3,17 +3,18 @@
 import sys
 
 import cube
+import draw
 
-N = 3
-eta = 0.01
-L = 2
+N = 5
+eta = 2
+L = 100 / 1.4
 alpha = 0.342076097
 
-default_cube = cube.Cube([0.5, 0.5], 1)
+default_cube = cube.Cube([50, 50], 100)
 
 def minimize(f):
     def get_point(X, Y, Z, C):
-        if C.r < 1e-5:
+        if C.r < 2:
             return False
         
         not_embedded_cubes = []        
@@ -56,24 +57,19 @@ def minimize(f):
     Y = []
     Z = []
     
-    p = [0.453, 0.808]
+    p = [1.0, 1.0]
     points = [(p, f(p))]
     X, Y, Z, m = split(X, Y, Z, points, 10002000)
-    print X, Y, Z
-    print "=" * 100
-    print m
-    print "=" * 100
+    draw.create_image("/tmp/%s.bmp" % 0, X, Y, Z)
     
     for qqq in xrange(150):
         p = get_point(X, Y, Z, default_cube)
+        if p == False:
+		  break
         points.append((p, f(p)))
         X, Y, Z, m = split(X, Y, Z, points, m)
-        print len(X), len(Y), len(Z)
-        print "=" * 100
+        draw.create_image("/tmp/%s.bmp" % (1 + qqq), X, Y, Z)
         print m
-        print "=" * 100
-    
-    print points
     
     
-minimize(lambda x: (x[0]-0.666)**2 + (x[1]-0.666)**4)
+minimize(lambda x: (x[0] - 23.1) ** 2 + (x[1] - 62.9)**2)

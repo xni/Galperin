@@ -48,6 +48,12 @@ class Cube(object):
     def intersect(self, other):
         return (not self.contains(other) and 
                 not other.contains(self))
+                
+    def left(self):
+	    return map(lambda x: x - self.r / 2, self.center)
+	    
+    def right(self):
+	    return map(lambda x: x + self.r / 2, self.center)
         
     def __repr__(self):
         return "Cube(%s, %s)" % (self.center, self.r)
