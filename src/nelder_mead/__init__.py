@@ -77,7 +77,3 @@ def nelder_mead(f, n):
             points = filtered_points
         elif f(x_3) > val_x_h:
             points = reduction(x_l, points)
-    
-print nelder_mead(lambda x: (x[0] - 4.5)**2 + (x[1] - 3.11284902)**2 + (x[2] - 4.5)**2 + (x[3] - 3.11284902)**2, 4)
-
-    
