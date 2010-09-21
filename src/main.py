@@ -5,7 +5,7 @@ from neuro import Neuron, NeuralNetwork
 
 dimensions = 2
 neurons = 7
-delta = 100.0
+delta = 1000.0
 
 
 def f(x):
@@ -29,11 +29,11 @@ def network_from_list(l):
     return N
 
 
-inner = [[random(), random()] for i in range(400)]
-border = ([[0.0, random()] for i in range(100)] + 
-          [[1.0, random()] for i in range(100)] + 
-          [[random(), 0.0] for i in range(100)] + 
-          [[random(), 1.0] for i in range(100)])
+inner = [[random(), random()] for i in range(40)]
+border = ([[0.0, random()] for i in range(10)] + 
+          [[1.0, random()] for i in range(10)] + 
+          [[random(), 0.0] for i in range(10)] + 
+          [[random(), 1.0] for i in range(10)])
 
 print inner
 print border

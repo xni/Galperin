@@ -17,14 +17,14 @@ def complex_box(f, n, lo, hi):
         return map(lambda x: x / len(points), map(lambda i: sum(i), 
                                                   zip(*points)))
         
-    def reflection(a, b, alpha):
-        def check_border(x, l, h):
-            if x > h:
-                return h
-            if x < l:
-                return l
-            return x
+    def check_border(x, l, h):
+        if x > h:
+            return h
+        if x < l:
+            return l
+        return x
         
+    def reflection(a, b):
         return map(lambda x, y, l, h: check_border(x + alpha * (x - y), l, h), a, b, lo, hi)
         
     
@@ -53,12 +53,11 @@ def complex_box(f, n, lo, hi):
             print "MINIMUM", x_l
             return x_l
         
-        c_alpha = alpha
-        x_3 = reflection(x_2, x_h, c_alpha)
+        x_3 = reflection(x_2, x_h)
         while f(x_3) > val_x_h:
             print "Unsuccessful reflection"
-            c_alpha /= 2.0
-            x_3 = reflection(x_2, x_h, c_alpha)
+            x_3 = check_border(centre_of_gravity([x_3, x_2]), lo, hi)
+
         
         filtered_points.append(x_3)
         points = filtered_points
