@@ -54,9 +54,15 @@ def complex_box(f, n, lo, hi):
             return x_l
         
         x_3 = reflection(x_2, x_h)
+        counter = 0
         while f(x_3) > val_x_h:
             print "Unsuccessful reflection"
             x_3 = check_border(centre_of_gravity([x_3, x_2]), lo, hi)
+            counter += 1
+            if counter > 100:
+                x_3 = map(lambda l, h, x: l + random.random() * (h - l),
+                          lo, hi, range(n))
+                break
 
         
         filtered_points.append(x_3)
