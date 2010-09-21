@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from random import random
 
 from complex_box import complex_box
@@ -45,8 +46,8 @@ def to_minimize(l):
 
 
 l = complex_box(to_minimize, (dimensions + 2) * neurons,
-                  [-100.0, 0.3, -1.0, -1.0] * neurons,
-                  [ 100.0, 9.9,  1.0,  1.0] * neurons)
+                  [-200.0, 1.0, -1.0, -1.0] * neurons,
+                  [ 200.0, 7.0,  1.0,  1.0] * neurons)
 
-for i in xrange(7):
-    print "%s * exp( -((%s - x)^2 + (%s - y)^2)/(%s^2) ) + " % (l[4 * i], l[4 * i + 1], l[4 * i + 2], l[4 * i + 3])
+for i in xrange(neurons):
+    print "%s * exp( -((%s - x)^2 + (%s - y)^2)/(%s^2) ) + " % (l[4 * i], l[4 * i + 2], l[4 * i + 3], l[4 * i + 1])
