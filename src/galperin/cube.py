@@ -47,7 +47,7 @@ class Cube(object):
     
     def intersect(self, other):
         return (not self.contains(other) and 
-                not other.contains(self))
+                not self.not_contains(other))
                 
     def left(self):
 	    return map(lambda x: x - self.r / 2, self.center)

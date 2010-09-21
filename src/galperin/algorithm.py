@@ -4,6 +4,7 @@ import sys
 
 import cube
 import draw
+import copy
 
 N = 5
 eta = 2
@@ -14,23 +15,43 @@ default_cube = cube.Cube([50, 50], 100)
 
 def minimize(f):
     def get_point(X, Y, Z, C):
+        def stopping_rule():
+            pass
+        
         if C.r < 2:
             return False
         
-        not_embedded_cubes = []        
-        for c_j in C.divide(N):
-            if not any(map(lambda x: x.contains(c_j), X + Y + Z)):
-                not_embedded_cubes.append(c_j)            
+        deleted = True
         
-        for c_j in not_embedded_cubes:
-            if all(map(lambda x: c_j.not_contains(x), X + Y + Z)):
+        for c_j in C.divide(N):
+            if any(map(lambda x: x.contains(c_j), X + Y + Z)):
+                continue
+            deleted = False
+            if all(map(lambda x: x.not_contains(c_j), X + Y + Z)):
                 return c_j.center
-            
-        for c_j in not_embedded_cubes:
-            if get_point(X, Y, Z, c_j):
-                return get_point(X, Y, Z, c_j)
-            
-        return False
+            # intersection
+            if sum(map(lambda x: 1 if x.intersect(c_j) else 0, X + Y + Z)) == 1:
+                only_intersector = filter(lambda x: x.intersect(c_j), X + Y + Z)
+                maximize_index, max_err = 0, 0
+                for (i, (x_j_s, x_k_s)) in enumerate(zip(c_j.center, only_intersector.center)):
+                    if math.fabs(x_j_s - x_k_s) > max_err:
+                        max_err = math.fabs(x_j_s - x_k_s)
+                        maximize_index = i
+                res = copy.copy(x_j.center)
+                res[maximize_index] += c_j.r / 2.0
+                return res
+        if deleted:
+            return False
+        if stopping_rule():
+            return False
+        else:
+            for c_j in C.divide(N):
+                if any(map(lambda x: x.contains(c_j), X + Y + Z)):
+                    continue
+                p = get_point(X, Y, Z, c_j)
+                if p:
+                    return p
+                    
     
     def split(X, Y, Z, points, current_min):
         last_value = points[-1][1]
@@ -64,8 +85,7 @@ def minimize(f):
     
     for qqq in xrange(150):
         p = get_point(X, Y, Z, default_cube)
-        if p == False:
-		  break
+        if p == False: break
         points.append((p, f(p)))
         X, Y, Z, m = split(X, Y, Z, points, m)
         draw.create_image("/tmp/%s.bmp" % (1 + qqq), X, Y, Z)
