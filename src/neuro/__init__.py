@@ -3,9 +3,6 @@
 import math
 
 
-delta = 100.0
-
-
 class Neuron(object):
     def __init__(self, w, a, c):
         self.w, self.a, self.c = w, a, c
@@ -30,16 +27,3 @@ class NeuralNetwork(object):
     def laplace(self, point):
         return sum(map(lambda neuron: neuron.laplace(point), self.neurons))
 
-
-def J(f, g, inside, borders, NN):
-    return sum(map(lambda x: (NN.laplace(x) - f(x)) ** 2, inside)) + \
-           delta * sum(map(lambda x: (NN(x) - g(x)) ** 2, borders))
-
-
-def network_from_list(l):
-    N = NeuralNetwork([])
-    for i in xrange(3):
-        N.neurons.append(Neuron(60 * l[i * 4] - 30,
-                                5 * l[i * 4 + 1],
-                                l[i * 4 + 2 : i * 4 + 4]))
-    return N
