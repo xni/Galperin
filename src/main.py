@@ -6,7 +6,7 @@ from neuro import Neuron, NeuralNetwork
 
 dimensions = 2
 neurons = 5
-delta = 10000.0
+delta = 1.0
 
 
 def f(x):
@@ -30,11 +30,11 @@ def network_from_list(l):
     return N
 
 
-inner = [[random(), random()] for i in range(40)]
-border = ([[0.0, random()] for i in range(10)] + 
-          [[1.0, random()] for i in range(10)] + 
-          [[random(), 0.0] for i in range(10)] + 
-          [[random(), 1.0] for i in range(10)])
+inner = [[random(), random()] for i in range(100)]
+border = ([[0.0, random()] for i in range(25)] + 
+          [[1.0, random()] for i in range(25)] + 
+          [[random(), 0.0] for i in range(25)] + 
+          [[random(), 1.0] for i in range(25)])
 
 print inner
 print border
@@ -51,8 +51,8 @@ print """Solution is complete
     %s neurons
     Nelder-Mead
     f = x + y
-    40 point in area
-    40 points on border
+    100 point in area
+    100 points on border
     delta = %s""" % (neurons, delta)
 
 for i in xrange(neurons):
