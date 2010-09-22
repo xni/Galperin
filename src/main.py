@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from random import random
 
-from complex_box import complex_box
+from nelder_mead import nelder_mead
 from neuro import Neuron, NeuralNetwork
 
 dimensions = 2
@@ -45,15 +45,12 @@ def to_minimize(l):
     return J(f, g, inner, border, nn)
 
 
-l = complex_box(to_minimize, (dimensions + 2) * neurons,
-                  [-200.0, 1.0, -3.0, -3.0] * neurons,
-                  [ 200.0, 7.0,  4.0,  4.0] * neurons)
+l = nelder_mead(to_minimize, neurons * (2 + dimensions))
 
 print """Solution is complete
     %s neurons
-    Complex box method
+    Nelder-Mead
     f = x + y
-    [-200..200, 1..7, -3..4, -3..4]
     40 point in area
     40 points on border
     delta = %s""" % (neurons, delta)
