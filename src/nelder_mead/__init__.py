@@ -48,7 +48,7 @@ def nelder_mead(f, n):
     while True:
         x_l, val_x_l = min_by(points)
         x_h, val_x_h = max_by(points)
-        
+        print val_x_h
         filtered_points = remove_point(x_h, points)
         x_s, val_x_s = max_by(filtered_points)
         
@@ -56,6 +56,7 @@ def nelder_mead(f, n):
         
         if math.sqrt(sum(map(lambda x: math.pow(f(x) - f(x_2), 2.0), points)) 
                      / (len(points))) < epsilon:
+            print "MINIMUM", val_x_l
             return x_l
         
         x_3 = reflection(x_2, x_h)
