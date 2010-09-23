@@ -5,8 +5,8 @@ from nelder_mead import nelder_mead
 from neuro import Neuron, NeuralNetwork
 
 dimensions = 2
-neurons = 5
-delta = 1.0
+neurons = 12
+delta = 1000.0
 
 
 def f(x):
@@ -35,9 +35,6 @@ border = ([[0.0, random()] for i in range(25)] +
           [[1.0, random()] for i in range(25)] + 
           [[random(), 0.0] for i in range(25)] + 
           [[random(), 1.0] for i in range(25)])
-
-print inner
-print border
 
 
 def to_minimize(l):
