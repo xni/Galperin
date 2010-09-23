@@ -1,14 +1,16 @@
 # -*- coding: utf-8 -*-
 import math
 from random import random
+from time import time
 
+from estimate import make_quad_estimate
 from nelder_mead import nelder_mead
 from neuro import Neuron, NeuralNetwork
 
 
 dimensions = 2
 neurons = 1
-delta = 1000.0
+delta = 1.0
 
 
 def f(x):
@@ -19,8 +21,6 @@ def g(x):
 
 
 def J(f, g, inside, borders, NN):
-    #for i in borders:
-    #    print "Border point", i, g(i), NN(i), math.pow(NN(i) - g(i), 2.0)
     return sum(map(lambda x: math.pow(NN.laplace(x) - f(x), 2.0), inside)) + \
            delta * sum(map(lambda x: math.pow(NN(x) - g(x), 2.0), borders))
 
@@ -45,24 +45,26 @@ def to_minimize(l):
     nn = network_from_list(l)
     return J(f, g, inner, border, nn)
 
-
+t_start = time()
 l = nelder_mead(to_minimize, neurons * (2 + dimensions))
+t_end = time()
 
-print """Solution is complete
+resulting_nn = network_from_list(l)
+sqrt_err = make_quad_estimate(resulting_nn, g, 0, 0, 1, 1, 0.01, 0.01)
+
+print u"""Solution is complete
     %s neurons
     Nelder-Mead
     f = x + y
     %s point in area
     %s points on border
     delta = %s
-    AVERAGE on border is %s""" % (neurons, len(inner), len(border), delta, 
-                                  J(f, g, inner, border, 
-                                    network_from_list(l)) / (delta * len(border)))
-    
-print "MIN VALUE = J = ", J(f, g, inner, border, network_from_list(l))
-#print l
-#for i in border:
-#        print "Border point", i, g(i), network_from_list(l)(i), math.pow(network_from_list(l)(i) - g(i), 2.0)
+    J = %s
+    sqrt_estimate = %s
+    Time taken: %s""" % (neurons, len(inner), len(border), delta, 
+                         J(f, g, inner, border,resulting_nn),
+                         sqrt_err, t_end - t_start)
+
 print "(" ,
 for i in xrange(neurons):
     ns = 2 + dimensions
