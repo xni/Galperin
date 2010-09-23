@@ -8,10 +8,10 @@ def nelder_mead(f, n):
     alpha = 1.0
     beta = 0.5
     gamma = 2.0
-    epsilon = 1e-9
+    epsilon = 1e-6
     
     def generate_points(n):
-        return map(lambda i: map(lambda x: random.uniform(-5, 5), range(n)),
+        return map(lambda i: map(lambda x: random.uniform(2, 10), range(n)),
                    range(n + 1))
     
     def centre_of_gravity(points):

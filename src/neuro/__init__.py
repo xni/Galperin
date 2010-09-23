@@ -8,13 +8,14 @@ class Neuron(object):
         self.w, self.a, self.c = w, a, c
 
     def __call__(self, point):
-        distance = sum(map(lambda x, y: (x - y) ** 2, point, self.c))
-        return self.w * math.exp(-1.0 * distance / (self.a ** 2))
+        distance = sum(map(lambda x, y: math.pow(x - y, 2.0), point, self.c))
+        return self.w * math.exp(-1.0 * distance / math.pow(self.a, 2.0))
     
     def laplace(self, point):
-        return sum(map(lambda x, y: -2.0 * self(point) / (self.a ** 2) + 
-                                    4.0 * self(point) * ((x - y) ** 2) / 
-                                          (self.a ** 4), point, self.c))
+        return sum(map(lambda x, y: -2.0 * self(point) / math.pow(self.a, 2.0) + 
+                                     4.0 * self(point) * math.pow(x - y, 2.0) / 
+                                          math.pow(self.a, 4.0),
+                       point, self.c))
 
 
 class NeuralNetwork(object):
