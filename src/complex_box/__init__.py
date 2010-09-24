@@ -26,7 +26,12 @@ def complex_box(f, n, lo, hi):
         
     def reflection(a, b):
         return map(lambda x, y, l, h: check_border(x + alpha * (x - y), l, h), a, b, lo, hi)
-        
+
+
+    def reduction(a, points):
+        return map(lambda x, y: map(lambda cx, cy: cx + 0.5 * (cy - cx), x, y),
+                   [a] * len(points), points)        
+    
     
     def min_by(points, f = f):
         return reduce(lambda (mp, mv), (p, v): (p, v) if v < mv else (mp, mv),
@@ -56,15 +61,14 @@ def complex_box(f, n, lo, hi):
         x_3 = reflection(x_2, x_h)
         counter = 0
         while f(x_3) > val_x_h:
-            print "Unsuccessful reflection"
             x_3 = check_border(centre_of_gravity([x_3, x_2]), lo, hi)
             counter += 1
             if counter > 100:
-                x_3 = map(lambda l, h, x: l + random.random() * (h - l),
-                          lo, hi, range(n))
+                x_l, val_x_l = min_by(points)
+                points = reduction(x_l, points)
+                print "Reduction"
                 break
-
-        
-        filtered_points.append(x_3)
-        points = filtered_points
+        else:
+            filtered_points.append(x_3)
+            points = filtered_points
         print val_x_h

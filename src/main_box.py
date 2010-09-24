@@ -4,13 +4,13 @@ from random import random
 from time import time
 
 from estimate import make_quad_estimate
-from nelder_mead import nelder_mead
+from complex_box import complex_box
 from neuro import Neuron, NeuralNetwork
 
 
 dimensions = 2
-neurons = 1
-delta = 1.0
+neurons = 3
+delta = 10000.0
 
 
 def f(x):
@@ -34,19 +34,22 @@ def network_from_list(l):
     return N
 
 
-inner = [[random(), random()] for i in range(10)]
-border = ([[0.0, random()] for i in range(5)] + 
-          [[1.0, random()] for i in range(5)] + 
-          [[random(), 0.0] for i in range(5)] + 
-          [[random(), 1.0] for i in range(5)])
 
 
 def to_minimize(l):
+    inner = [[random(), random()] for i in range(5)]
+    border = ([[0.0, random()] for i in range(25)] + 
+          [[1.0, random()] for i in range(25)] + 
+          [[random(), 0.0] for i in range(25)] + 
+          [[random(), 1.0] for i in range(25)])
+
     nn = network_from_list(l)
     return J(f, g, inner, border, nn)
 
 t_start = time()
-l = nelder_mead(to_minimize, neurons * (2 + dimensions))
+l = complex_box(to_minimize, neurons * (2 + dimensions), 
+                [-250.0, 1.0, -5.0, -5.0] * neurons, 
+                [250.0, 10.0, 6.0, 6.0] * neurons)
 t_end = time()
 
 resulting_nn = network_from_list(l)
@@ -54,7 +57,7 @@ sqrt_err = make_quad_estimate(resulting_nn, g, 0, 0, 1, 1, 0.01, 0.01)
 
 print u"""Solution is complete
     %s neurons
-    Nelder-Mead
+    Complex Box
     f = x + y
     %s point in area
     %s points on border
