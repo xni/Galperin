@@ -4,13 +4,17 @@ from random import random
 from time import time
 
 from estimate import make_quad_estimate
-from nelder_mead import nelder_mead
+from complex_box import complex_box
 from neuro import Neuron, NeuralNetwork
 
 
 dimensions = 2
-neurons = 5
-delta = 1000.0
+neurons = 3
+delta = 10000.0
+
+current = []
+inner = []
+border = []
 
 
 def f(x):
@@ -23,8 +27,6 @@ def g(x):
 def J(f, g, inside, borders, NN):
     return sum(map(lambda x: math.pow(NN.laplace(x) - f(x), 2.0), inside)) + \
            delta * sum(map(lambda x: math.pow(NN(x) - g(x), 2.0), borders))
-    
-draw ([], "/tmp/qqq.png")
 
 
 def network_from_list(l):
@@ -36,19 +38,28 @@ def network_from_list(l):
     return N
 
 
-inner = [[random(), random()] for i in range(10)]
-border = ([[0.0, random()] for i in range(5)] + 
-          [[1.0, random()] for i in range(5)] + 
-          [[random(), 0.0] for i in range(5)] + 
-          [[random(), 1.0] for i in range(5)])
 
 
 def to_minimize(l):
+    global current
+    global inner
+    global border
+    inner = [[random(), random()] for i in range(5)]
+    border = ([[0.0, random()] for i in range(25)] + 
+          [[1.0, random()] for i in range(25)] + 
+          [[random(), 0.0] for i in range(25)] + 
+          [[random(), 1.0] for i in range(25)]) 
+    current = l
     nn = network_from_list(l)
     return J(f, g, inner, border, nn)
 
 t_start = time()
-l = nelder_mead(to_minimize, neurons * (2 + dimensions))
+try:
+    l = complex_box(to_minimize, neurons * (2 + dimensions), 
+                    [-250.0, 1.0, -5.0, -5.0] * neurons, 
+                    [250.0, 10.0, 6.0, 6.0] * neurons)
+except KeyboardInterrupt, e:
+    l = current
 t_end = time()
 
 resulting_nn = network_from_list(l)
@@ -56,7 +67,7 @@ sqrt_err = make_quad_estimate(resulting_nn, g, 0, 0, 1, 1, 0.01, 0.01)
 
 print u"""Solution is complete
     %s neurons
-    Nelder-Mead e-10
+    Complex Box
     f = x + y
     %s point in area
     %s points on border
