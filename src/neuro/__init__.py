@@ -28,3 +28,4 @@ class NeuralNetwork(object):
     def laplace(self, point):
         return sum(map(lambda neuron: neuron.laplace(point), self.neurons))
 
+

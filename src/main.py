@@ -9,8 +9,8 @@ from neuro import Neuron, NeuralNetwork
 
 
 dimensions = 2
-neurons = 1
-delta = 1.0
+neurons = 5
+delta = 1000.0
 
 
 def f(x):
@@ -34,11 +34,11 @@ def network_from_list(l):
     return N
 
 
-inner = [[random(), random()] for i in range(10)]
-border = ([[0.0, random()] for i in range(10)] + 
-          [[1.0, random()] for i in range(10)] + 
-          [[random(), 0.0] for i in range(10)] + 
-          [[random(), 1.0] for i in range(10)])
+inner = [[random(), random()] for i in range(100)]
+border = ([[0.0, random()] for i in range(50)] + 
+          [[1.0, random()] for i in range(50)] + 
+          [[random(), 0.0] for i in range(50)] + 
+          [[random(), 1.0] for i in range(50)])
 
 
 def to_minimize(l):
@@ -54,7 +54,7 @@ sqrt_err = make_quad_estimate(resulting_nn, g, 0, 0, 1, 1, 0.01, 0.01)
 
 print u"""Solution is complete
     %s neurons
-    Nelder-Mead
+    Nelder-Mead e-10
     f = x + y
     %s point in area
     %s points on border
