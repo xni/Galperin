@@ -4,6 +4,8 @@ from random import random
 from time import time
 
 import matplotlib.pyplot as plot
+from matplotlib.patches import Patch
+from pylab import *
 
 from estimate import make_quad_estimate
 from complex_box import complex_box
@@ -58,8 +60,8 @@ def to_minimize(l):
 t_start = time()
 try:
     l = complex_box(to_minimize, neurons * (2 + dimensions), 
-                    [-250.0, 1.0, 0.0, 0.0] * neurons, 
-                    [250.0, 10.0, 4.0, 4.0] * neurons)
+                    [-250.0, 1.0, -2.0, -2.0] * neurons, 
+                    [250.0, 10.0, 6.0, 6.0] * neurons)
 except KeyboardInterrupt, e:
     l = current
 t_end = time()
@@ -85,18 +87,41 @@ for i in xrange(neurons):
     ns = 2 + dimensions
     print "(%s)*exp(-(((%s)-x)^2+((%s)-y)^2)/((%s)^2))+" % (l[ns * i], l[ns * i + 2], l[ns * i + 3], l[ns * i + 1]),
 print "0)"
-neuro.draw.draw(resulting_nn, (0.0, 0.0, 4.0, 4.0), (0.0, 0.0, 1.0, 1.0), "/tmp/cfg.png")
+neuro.draw.draw(resulting_nn, (-3.0, -3.0, 7.0, 7.0), (0.0, 0.0, 1.0, 1.0), "/tmp/cfg.png")
+
+dx, dy = 0.005, 0.005
+ax = arange(0, 1.0001, dx)
+ay = arange(0.0, 1.0001, dy)
+X, Y = meshgrid(ax, ay)
+
+def residual(x, y):
+    c = []
+    for j in xrange(len(x)):
+        cur_c = []
+        for i in xrange(len(x[j])):
+            cur_x = x[j][i]
+            cur_y = y[j][i]
+            cur_c.append(math.fabs(g([cur_x, cur_y]) - resulting_nn([cur_x, cur_y])))
+        c.append(cur_c)
+    return c
+
+Z = residual(X, Y)
+figure(5)
+pcolor(X, Y, Z)
+colorbar()
+axis([0,1,0,1])
+savefig("/tmp/overall.png")
 
 for c_y in xrange(3):
     y = c_y * 0.5
     xs = [0.01*x for x in range(100)]
     ys = [resulting_nn([x, y]) for x in xs]
     zs = [g([x, y]) for x in xs]
-    plot.figure(c_y)
-    plot.xlabel('$x$')
-    plot.ylabel('$y$')
-    plot.title(ur'Погрешность полученного решения в сечении $y = %.1f$' % y)
-    plot.plot(xs, ys, label=ur'полученное решение', color='red')    
-    plot.plot(xs, zs, label=ur'точное решение', color='green')    
-    plot.legend(loc='upper right')
-    plot.savefig("/tmp/fig_%s.png" % c_y)
+    figure(c_y)
+    xlabel('$x$')
+    ylabel('$y$')
+    title(ur'Погрешность полученного решения в сечении $y = %.1f$' % y)
+    plot(xs, ys, label=ur'полученное решение', color='red')    
+    plot(xs, zs, label=ur'точное решение', color='green')    
+    legend(loc='upper right')
+    savefig("/tmp/fig_%s.png" % c_y)
