@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import math
+from os import mkdir
 from random import random
 from time import time
 
@@ -65,6 +66,8 @@ try:
 except KeyboardInterrupt, e:
     l = current
 t_end = time()
+folder = "/tmp/" + str(int(t_end)) + "/"
+mkdir(folder)
 
 resulting_nn = network_from_list(l)
 sqrt_err = make_quad_estimate(resulting_nn, g, 0, 0, 1, 1, 0.01, 0.01)
@@ -85,9 +88,11 @@ print u"""Solution is complete
 print "(" ,
 for i in xrange(neurons):
     ns = 2 + dimensions
-    print "(%s)*exp(-(((%s)-x)^2+((%s)-y)^2)/((%s)^2))+" % (l[ns * i], l[ns * i + 2], l[ns * i + 3], l[ns * i + 1]),
+    print "(%s)*exp(-(((%s)-x)^2+((%s)-y)^2)/((%s)^2))+" % (l[ns * i], 
+                            l[ns * i + 2], l[ns * i + 3], l[ns * i + 1]),
 print "0)"
-neuro.draw.draw(resulting_nn, (-3.0, -3.0, 7.0, 7.0), (0.0, 0.0, 1.0, 1.0), "/tmp/cfg.png")
+neuro.draw.draw(resulting_nn, (-3.0, -3.0, 7.0, 7.0), (0.0, 0.0, 1.0, 1.0), 
+                folder + "cfg.png")
 
 dx, dy = 0.005, 0.005
 ax = arange(0, 1.0001, dx)
@@ -110,7 +115,7 @@ figure(5)
 pcolor(X, Y, Z)
 colorbar()
 axis([0,1,0,1])
-savefig("/tmp/overall.png")
+savefig(folder + "overall.png")
 
 for c_y in xrange(3):
     y = c_y * 0.5
@@ -124,4 +129,4 @@ for c_y in xrange(3):
     plot(xs, ys, label=ur'полученное решение', color='red')    
     plot(xs, zs, label=ur'точное решение', color='green')    
     legend(loc='upper right')
-    savefig("/tmp/fig_%s.png" % c_y)
+    savefig(folder + "fig_%s.png" % c_y)
