@@ -17,7 +17,8 @@ border = []
 def network_from_list(l):
     N = NeuralNetwork([])
     p = dimensions + 2 # 2 for weight and width
-    for i in xrange(neurons):        
+    n = len(l) / p
+    for i in xrange(n):        
         N.neurons.append(Neuron(l[i * p], l[i * p + 1],
                                 l[i * p + 2 : i * p + 2 + dimensions]))
     return N
