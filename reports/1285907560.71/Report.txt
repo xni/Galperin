@@ -1,0 +1,12 @@
+Solution is complete
+    1 neurons
+    Complex Box
+    f = x + y
+    15 point in area
+    100 points on border
+    delta = 100.0
+    J = 299.011401883
+    sqrt_estimate = 12.9281233316
+    Time taken: 12.4945960045
+
+((1.96150231927)*exp(-(((1.01672300804)-x)^2+((0.998134885083)-y)^2)/((1.0)^2))+0)
