@@ -7,7 +7,7 @@ from neuro import Neuron, NeuralNetwork
 
 dimensions = 2
 neurons = 3
-delta = 100.0
+delta = 1000.0
 
 current = []
 inner = []
