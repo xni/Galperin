@@ -91,6 +91,3 @@ def to_minimize(l):
     global border
     nn = network_from_list(l)
     return J(f, g, inner, border, nn)
-
-
-print J_grad(f, g, inner, border, network_from_list([5] * 12))

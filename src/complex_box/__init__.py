@@ -6,7 +6,7 @@ import random
 
 def complex_box(f, n, lo, hi):
     alpha = 1.3
-    epsilon = 1e-4
+    epsilon = 1e-9
     
     def generate_points(n):
         return map(lambda i: map(lambda l, h, x: l + random.random() * (h - l),
@@ -55,7 +55,6 @@ def complex_box(f, n, lo, hi):
         if math.sqrt(sum(map(lambda x: math.pow(f(x) - f(x_2), 2.0), points)) 
                      / (len(points))) < epsilon:
             x_l, val_x_l = min_by(points)
-            print "MINIMUM", x_l
             return x_l
         
         x_3 = reflection(x_2, x_h)
@@ -66,9 +65,7 @@ def complex_box(f, n, lo, hi):
             if counter > 100:
                 x_l, val_x_l = min_by(points)
                 points = reduction(x_l, points)
-                print "Reduction"
                 break
         else:
             filtered_points.append(x_3)
             points = filtered_points
-        print val_x_h
