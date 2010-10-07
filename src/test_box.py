@@ -59,13 +59,13 @@ class Test(unittest.TestCase):
                    20.0 * math.exp(-(math.pow(0.34 - x, 2.0) + math.pow(0.16 - y, 2.0))/(0.35 ** 2)) + \
                    14.0 * math.exp(-(math.pow(0.2 - x, 2.0) + math.pow(0.7 - y, 2.0))/(0.31 ** 2))
                    
-        points = [[random.random(), random.random()] for _ in range(200)]
+        points = [[random.random(), random.random()] for _ in range(100)]
         
         def residual(l):
             NN = network_from_list(l)
             return sum(map(lambda x: math.fabs(signal(x) - NN(x)), points))
         
-        res = complex_box(residual, 12, [0, 0.1, 0.0, 0.0] * 3, [100, 1.0, 1.0, 1.0] * 3)
+        res = complex_box(residual, 12, [0, 0.1, 0.0, 0.0] * 3, [60, 0.7, 1.0, 1.0] * 3)
         print res
         # см. комментарий в тесте 2
         # diffs = map(lambda x, y: math.fabs(x - y), [20.0, 0.5, 0.5, 0.82, 25, 0.35, 0.34, 0.16, 14, 0.8, 0.94, 0.01], res)
