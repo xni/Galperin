@@ -7,10 +7,12 @@
 #define sqr(a) ((a)*(a))
 
 const int NEURONS = 10;
-const int POINTS = 128;
+const int POINTS = 2504;
+const int SIDE = 50;
 
 double box_points[2 * NEURONS * 4][4 * NEURONS];
 double test_points[POINTS][2];
+double cached_values[2 * NEURONS * 4];
 
 double calc(double *a, int n, double x, double y)
 {
@@ -34,11 +36,35 @@ void generate_test_points()
     test_points[2][1] = 0.0;
     test_points[3][0] = 1.0;
     test_points[3][1] = 1.0;
-    for (int i=4; i<POINTS; ++i)
+/*     for (int i=0; i<POINTS; ++i)
+     {
+         test_points[i][0] = double(rand()) / RAND_MAX;
+         test_points[i][1] = double(rand()) / RAND_MAX;
+     }
+    */for (int i=0; i<SIDE; ++i)
     {
-        test_points[i][0] = double(rand()) / RAND_MAX;
-        test_points[i][1] = double(rand()) / RAND_MAX;
+        for (int j=0; j<SIDE; ++j)
+        {
+            test_points[4 + i * SIDE + j][0] = double(i + 1) / (SIDE + 1);
+            test_points[4 + i * SIDE + j][1] = double(j + 1) / (SIDE + 1);
+        }
     }
+}
+
+double J(double *a)
+{
+    double secret_value[] = {21.0, 0.5, 0.23, 0.58,
+                             67.0, 0.8, 0.5, 0.5,
+                             74.0, 1.3, 0.79, 0.32/*,
+                             12, 1.4, 0.24, 0.84,
+                             50, 1.8, 0.84, 0.1*/};
+    double res = 0.0;
+    for (int i=0; i<POINTS; ++i)
+    {
+        res += fabs(calc(a, NEURONS, test_points[i][0], test_points[i][1]) - calc(&secret_value[0], 3, test_points[i][0], test_points[i][1]));
+    }
+//     std::cout << "res is " << res << std::endl;
+    return res;
 }
 
 void generate_box_points()
@@ -52,23 +78,8 @@ void generate_box_points()
             box_points[i][4 * j + 2] = double(rand()) / RAND_MAX;
             box_points[i][4 * j + 3] = double(rand()) / RAND_MAX;
         }
+        cached_values[i] = J(&box_points[i][0]);
     }
-}
-
-double J(double *a)
-{
-    double secret_value[] = {21.0, 0.5, 0.23, 0.58,
-                             67.0, 0.8, 0.5, 0.5,
-                             74.0, 1.3, 0.79, 0.32,
-                             12, 1.4, 0.24, 0.84,
-                             50, 1.8, 0.84, 0.1};
-    double res = 0.0;
-    for (int i=0; i<POINTS; ++i)
-    {
-        res += fabs(calc(a, NEURONS, test_points[i][0], test_points[i][1]) - calc(&secret_value[0], 5, test_points[i][0], test_points[i][1]));
-    }
-//     std::cout << "res is " << res << std::endl;
-    return res;
 }
 
 int iteration = 0;
@@ -83,7 +94,8 @@ int box_method()
         double max_error = 0.0;
         for (int i=0; i<2*NEURONS*4; ++i)
         {
-            double tmp = J(&box_points[i][0]);
+            //double tmp = J(&box_points[i][0]);
+            double tmp = cached_values[i];
             if (tmp > max_error)
             {
                 max_error = tmp;
@@ -107,9 +119,11 @@ int box_method()
         if (iteration % 100 == 0)
         {
             double sum = 0.0;
+            double tmp = J(&cog[0]);
             for (int i=0; i<2*NEURONS*4; ++i)
             {
-                sum += sqr(J(&cog[0]) - J(&box_points[i][0]));
+                //sum += sqr(J(&cog[0]) - J(&box_points[i][0]));
+                sum += sqr(tmp - cached_values[i]);
             }
             if (sqrt(sum) < 1e-7)
             {
@@ -118,7 +132,8 @@ int box_method()
                 double min_error = 1e307;
                 for (int i=0; i<2*NEURONS*4; ++i)
                 {
-                    double tmp = J(&box_points[i][0]);
+//                     double tmp = J(&box_points[i][0]);
+                    double tmp = cached_values[i];
                     if (tmp < min_error)
                     {
                         min_error = tmp;
@@ -168,6 +183,7 @@ int box_method()
                 {
                     box_points[max_index][i] = new_point[i];
                 }
+                cached_values[max_index] = J(&box_points[max_index][0]);
                 break;
             }
         }
@@ -180,7 +196,8 @@ int box_method()
             double min_error = 1e307;
             for (int i=0; i<2*NEURONS*4; ++i)
             {
-                double tmp = J(&box_points[i][0]);
+//                 double tmp = J(&box_points[i][0]);
+                double tmp = cached_values[i];
                 if (tmp < min_error)
                 {
                     min_error = tmp;
@@ -193,6 +210,7 @@ int box_method()
                 {
                     box_points[i][j] = box_points[min_index][j] + 0.5 * (box_points[i][j] - box_points[min_index][j]);
                 }
+                cached_values[i] = J(&box_points[i][0]);
             }
         }
     }
@@ -203,7 +221,7 @@ int main()
     srand(time(0));
     generate_box_points();
     generate_test_points();
-    std::cout << std::setprecision(10);
+//    std::cout << std::ios::fixed << std::setprecision(10);
     int p = box_method();
     for (int i=0; i<4*NEURONS; ++i)
         std::cout << box_points[p][i] << " ";
