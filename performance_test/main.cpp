@@ -3,12 +3,13 @@
 #include <cstdlib>
 #include <ctime>
 #include <iomanip>
+#include <fstream>
 
 #define sqr(a) ((a)*(a))
 
 const int NEURONS = 10;
-const int POINTS = 2504;
 const int SIDE = 50;
+const int POINTS = 4 + sqr(SIDE) + 200;
 
 double box_points[2 * NEURONS * 4][4 * NEURONS];
 double test_points[POINTS][2];
@@ -47,21 +48,30 @@ void generate_test_points()
         {
             test_points[4 + i * SIDE + j][0] = double(i + 1) / (SIDE + 1);
             test_points[4 + i * SIDE + j][1] = double(j + 1) / (SIDE + 1);
+//             std::cout << test_points[4 + i * SIDE + j][0] << " " << test_points[4 + i * SIDE + j][1] << " ";
         }
+    }
+    
+    for (int i = 4 + SIDE * SIDE; i < POINTS; i++)
+    {
+        test_points[i][0] = 0.5 + 0.5 * double(rand()) / RAND_MAX;
+        test_points[i][1] = 0.5 + 0.5 * double(rand()) / RAND_MAX;
+//         std::cout << test_points[i][0] << " " << test_points[i][1] << " ";
     }
 }
 
 double J(double *a)
 {
-    double secret_value[] = {21.0, 0.5, 0.23, 0.58,
-                             67.0, 0.8, 0.5, 0.5,
-                             74.0, 1.3, 0.79, 0.32/*,
-                             12, 1.4, 0.24, 0.84,
-                             50, 1.8, 0.84, 0.1*/};
+//     double secret_value[] = {21.0, 0.5, 0.23, 0.58,
+//                              67.0, 0.8, 0.5, 0.5,
+//                              74.0, 1.3, 0.79, 0.32/*,
+//                              12, 1.4, 0.24, 0.84,
+//                              50, 1.8, 0.84, 0.1*/};
     double res = 0.0;
     for (int i=0; i<POINTS; ++i)
     {
-        res += fabs(calc(a, NEURONS, test_points[i][0], test_points[i][1]) - calc(&secret_value[0], 3, test_points[i][0], test_points[i][1]));
+        //res += fabs(calc(a, NEURONS, test_points[i][0], test_points[i][1]) - calc(&secret_value[0], 3, test_points[i][0], test_points[i][1]));
+        res += fabs(calc(a, NEURONS, test_points[i][0], test_points[i][1]) - test_points[i][0] * test_points[i][1] * cos(test_points[i][0]));
     }
 //     std::cout << "res is " << res << std::endl;
     return res;
@@ -69,16 +79,16 @@ double J(double *a)
 
 void generate_box_points()
 {
-    for (int i=0; i<2 * NEURONS * 4; ++i)
-    {
-        for (int j=0; j<NEURONS; ++j)
+    for (int c = 0; c < 2 * NEURONS * 4; c++)
+    { 
+        for (int i = 0; i < NEURONS; i++)
         {
-            box_points[i][4 * j] = 100.0 * double(rand()) / RAND_MAX;
-            box_points[i][4 * j + 1] = 0.3 + 1.7 * double(rand()) / RAND_MAX;
-            box_points[i][4 * j + 2] = double(rand()) / RAND_MAX;
-            box_points[i][4 * j + 3] = double(rand()) / RAND_MAX;
+            box_points[c][4 * i] = -100.0 + 200.0 * double(rand()) / RAND_MAX;
+            box_points[c][4 * i + 1] = 0.3 + 1.7 * rand() / RAND_MAX;
+            box_points[c][4 * i + 2] = -0.5 + 2.0 * double(rand()) / RAND_MAX;
+            box_points[c][4 * i + 3] = -0.5 + 2.0 * double(rand()) / RAND_MAX;
         }
-        cached_values[i] = J(&box_points[i][0]);
+//         std::cout << "Conf " << c << std::endl;
     }
 }
 
@@ -143,7 +153,7 @@ int box_method()
                 std::cout << min_error << std::endl;
                 return min_index;
             }
-            std::cout << "Max error = " << max_error << std::endl;
+            //std::cout << "Max error = " << max_error << std::endl;
         }
 
         // Box method
@@ -158,18 +168,18 @@ int box_method()
                 int type = j % 4;
                 if (type == 0)
                 {
-                    if (new_point[j] < 0.0) new_point[j] = 1.0;
-                    if (new_point[j] > 100.0) new_point[j] = 99.0;
+                    if (new_point[j] < -100.0) new_point[j] = -100.0;
+                    if (new_point[j] > 100.0) new_point[j] = 100.0;
                 }
                 else if (type == 1)
                 {
-                    if (new_point[j] < 0.1) new_point[j] = 0.2;
+                    if (new_point[j] < 0.3) new_point[j] = 0.3;
                     if (new_point[j] > 2.0) new_point[j] = 2.0;
                 }
                 else
                 {
-                    if (new_point[j] < 0.0) new_point[j] = 0.01;
-                    if (new_point[j] > 1.0) new_point[j] = 0.99;
+                    if (new_point[j] < -0.5) new_point[j] = -0.5;
+                    if (new_point[j] > 1.5) new_point[j] = 1.5;
                 }
             }
             if (J(&new_point[0]) > max_error)
@@ -191,7 +201,7 @@ int box_method()
         if (!good_point)
         {
             // Finding the best point
-            std::cout << "Reduction" << std::endl;
+            //std::cout << "Reduction" << std::endl;
             int min_index = 0;
             double min_error = 1e307;
             for (int i=0; i<2*NEURONS*4; ++i)
