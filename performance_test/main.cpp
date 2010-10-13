@@ -9,7 +9,7 @@
 
 const int NEURONS = 10;
 const int SIDE = 50;
-const int POINTS = 4 + sqr(SIDE) + 200;
+const int POINTS = 4 + sqr(SIDE);
 
 double box_points[2 * NEURONS * 4][4 * NEURONS];
 double test_points[POINTS][2];
@@ -50,13 +50,6 @@ void generate_test_points()
             test_points[4 + i * SIDE + j][1] = double(j + 1) / (SIDE + 1);
 //             std::cout << test_points[4 + i * SIDE + j][0] << " " << test_points[4 + i * SIDE + j][1] << " ";
         }
-    }
-    
-    for (int i = 4 + SIDE * SIDE; i < POINTS; i++)
-    {
-        test_points[i][0] = 0.5 + 0.5 * double(rand()) / RAND_MAX;
-        test_points[i][1] = 0.5 + 0.5 * double(rand()) / RAND_MAX;
-//         std::cout << test_points[i][0] << " " << test_points[i][1] << " ";
     }
 }
 
