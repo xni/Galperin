@@ -7,66 +7,75 @@
 
 #define sqr(a) ((a)*(a))
 
-const int NEURONS = 10;
-const int SIDE = 50;
+const int NEURONS = 7;
+const int SIDE = 30;
 const int POINTS = 4 + sqr(SIDE);
 
 double box_points[2 * NEURONS * 4][4 * NEURONS];
 double test_points[POINTS][2];
 double cached_values[2 * NEURONS * 4];
 
+
+double borders_func(double x, double y) {
+  return sin(M_PI * x) + y;
+}
+
+
+inline double calc_neuron(double *a, double x, double y) {
+  double x_d = x - a[2];
+  double y_d = y - a[3];
+  double a_q = a[1];
+  return a[0]* exp(-(sqr(x_d) + sqr(y_d)) / sqr(a_q));
+}
+
+
+double calc_derivative(double *a, int n, double x, double y) {
+  double res = 0.0;
+  for (int i = 0; i < n; i++) {
+    res += -2.0 * calc_neuron(&a[4 * i], x, y) / sqr(a[i * 4 + 1]) +
+      4.0 * calc_neuron(&a[4 * i], x, y) * sqr(x - y) / sqr(sqr(a[i * 4 + 1]));
+  }
+}
+
 double calc(double *a, int n, double x, double y)
 {
     double res = 0.0;
     for (int i=0; i<n; ++i)
     {
-        res += a[i * 4]* exp(-(sqr(x - a[i * 4 + 2]) + sqr(y - a[i * 4 + 3])) / sqr(a[i * 4 + 1]));
-//         std::cout << x << " " << y << std::endl;
-//         std::cout << a[i*4] << " "<< a[i*4+1] << " " << a[i*4+2] << " " << a[i*4+3] << std::endl; 
+      double x_d = x - a[i * 4 + 2];
+      double y_d = y - a[i * 4 + 3];
+      double a_q = a[i * 4 + 1];
+      res += a[i * 4]* exp(-(sqr(x_d) + sqr(y_d)) / sqr(a_q));
     }
     return res;
 }
 
 void generate_test_points()
 {
-    test_points[0][0] = 0.0;
-    test_points[0][1] = 0.0;
-    test_points[1][0] = 0.0;
-    test_points[1][1] = 1.0;
-    test_points[2][0] = 1.0;
-    test_points[2][1] = 0.0;
-    test_points[3][0] = 1.0;
-    test_points[3][1] = 1.0;
-/*     for (int i=0; i<POINTS; ++i)
-     {
-         test_points[i][0] = double(rand()) / RAND_MAX;
-         test_points[i][1] = double(rand()) / RAND_MAX;
-     }
-    */for (int i=0; i<SIDE; ++i)
+  const double step = 1.0 / (SIDE - 1);
+    for (int i=0; i<SIDE; ++i)
     {
         for (int j=0; j<SIDE; ++j)
         {
-            test_points[4 + i * SIDE + j][0] = double(i + 1) / (SIDE + 1);
-            test_points[4 + i * SIDE + j][1] = double(j + 1) / (SIDE + 1);
-//             std::cout << test_points[4 + i * SIDE + j][0] << " " << test_points[4 + i * SIDE + j][1] << " ";
+	  test_points[i * SIDE + j][0] = step * i;
+	  test_points[i * SIDE + j][1] = step * j;
         }
     }
 }
 
 double J(double *a)
 {
-//     double secret_value[] = {21.0, 0.5, 0.23, 0.58,
-//                              67.0, 0.8, 0.5, 0.5,
-//                              74.0, 1.3, 0.79, 0.32/*,
-//                              12, 1.4, 0.24, 0.84,
-//                              50, 1.8, 0.84, 0.1*/};
     double res = 0.0;
     for (int i=0; i<POINTS; ++i)
     {
-        //res += fabs(calc(a, NEURONS, test_points[i][0], test_points[i][1]) - calc(&secret_value[0], 3, test_points[i][0], test_points[i][1]));
-        res += fabs(calc(a, NEURONS, test_points[i][0], test_points[i][1]) - test_points[i][0] * test_points[i][1] * cos(test_points[i][0]));
+      if (test_points[i][0] == 0.0 || test_points[i][1] == 0.0 || test_points[i][0] == 1.0 || test_points[i][1] == 1.0) {
+	double tmp =  calc(a, NEURONS, test_points[i][0], test_points[i][1]) - borders_func(test_points[i][0], test_points[i][1]);
+	res += sqr(tmp);
+      } else {
+	double tmp = calc_derivative(a, NEURONS, test_points[i][0], test_points[i][1]);
+	res += 800 * sqr(tmp);
+      }
     }
-//     std::cout << "res is " << res << std::endl;
     return res;
 }
 
@@ -81,7 +90,6 @@ void generate_box_points()
             box_points[c][4 * i + 2] = -0.5 + 2.0 * double(rand()) / RAND_MAX;
             box_points[c][4 * i + 3] = -0.5 + 2.0 * double(rand()) / RAND_MAX;
         }
-//         std::cout << "Conf " << c << std::endl;
     }
 }
 
@@ -105,7 +113,7 @@ int box_method()
                 max_index = i;
             }
         }
-//         std::cout << "Max error = " << max_error << std::endl;
+	//        std::cout << "Max error = " << max_error << std::endl;
         // Finding the centre of gravity
         double cog[4 * NEURONS] = {0};
         for (int i=0; i<4*NEURONS; ++i)
@@ -146,7 +154,7 @@ int box_method()
                 std::cout << min_error << std::endl;
                 return min_index;
             }
-            //std::cout << "Max error = " << max_error << std::endl;
+            std::cout << "Max error = " << max_error << std::endl;
         }
 
         // Box method
