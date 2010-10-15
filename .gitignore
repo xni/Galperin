@@ -1,7 +1,0 @@
-*.pyc
-*~
-#*
-src/main.py
-*.out
-reports/*
-!reports/search.sh
