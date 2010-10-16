@@ -1,0 +1,13 @@
+*.pyc
+*~
+#*
+src/main.py
+*.out
+reports/*
+!reports/search.sh
+*logs_*
+.*
+!.gitignore
+*result
+*result.txt
+*main

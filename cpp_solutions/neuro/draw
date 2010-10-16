@@ -1,0 +1,2 @@
+set dgrid3d 50,50
+splot "result.txt" u 1:2:3 with lines
