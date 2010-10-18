@@ -1,2 +1,0 @@
-set pm3d implicit at b
-splot "result.txt" u 1:2:3 with lines

@@ -4,9 +4,7 @@
 Скрипт для генерации сравнительных отчетов для разных методов решения
 """
 from __future__ import division
-
 import sys
-
 from pylab import *
 
 
@@ -42,12 +40,18 @@ class GridLoader(object):
         self.step_y = (self.top_y - self.bottom_y) / (len(self.data) - 1)
 
         self.data.reverse()
+        print "Loaded data: %sx%s" % (len(self.data[0]), len(self.data))
 
     def get_value(self, x, y):
-        q_top = int(math.floor(y / self.step_y))
-        q_bottom = int(math.ceil( y / self.step_y))
+        q_top = int(math.ceil(y / self.step_y))
+        q_bottom = int(math.floor(y / self.step_y))
         q_left = int(math.floor(x / self.step_x))
-        q_right = int(math.floor(x / self.step_x))
+        q_right = int(math.ceil(x / self.step_x))
+
+        if q_top >= len(self.data):
+            q_top = len(self.data) - 1
+        if q_right >= len(self.data[0]):
+            q_right = len(self.data[0]) - 1
 
         if (q_top == q_bottom) and (q_left == q_right):
             return self.data[q_top][q_left]
@@ -57,17 +61,17 @@ class GridLoader(object):
                 self.data[q_top][q_right] - self.data[q_top][q_left])
 
         if (q_left == q_right):
-            return self.data[q_top][q_left] + (y - q_top * self.step_y) / self.step_y * (
-                self.data[q_bottom][q_left] - self.data[q_top][q_left])
-                
-        y_interpolation_left = (self.data[q_top][q_left] +
-            (y - q_top * self.step_y) / self.step_y * (self.data[q_bottom][q_left] -
-                                                       self.data[q_top][q_left]))
-        y_interpolation_right = (data[q_top][q_right] +
-            (y - q_top * self.step_y) / self.step_y * (self.data[q_bottom][q_right] -
-                                                       self.data[q_top][q_right]))
+            return self.data[q_bottom][q_left] + (y - q_bottom * self.step_y) \
+                / self.step_y * (self.data[q_top][q_left] - self.data[q_bottom][q_left])
+
+        y_interpolation_left = (self.data[q_bottom][q_left] +
+            (y - q_bottom * self.step_y) / self.step_y * (self.data[q_top][q_left] -
+                                                       self.data[q_bottom][q_left]))
+        y_interpolation_right = (self.data[q_bottom][q_right] +
+            (y - q_bottom * self.step_y) / self.step_y * (self.data[q_top][q_right] -
+                                                       self.data[q_bottom][q_right]))
         interpolation = (y_interpolation_left +
-                         (x - q_left * self.step_x) / self.step.x * (
+                         (x - q_left * self.step_x) / self.step_x * (
                 y_interpolation_right - y_interpolation_left))
         return interpolation
 
@@ -96,6 +100,27 @@ def draw_two_value_maps(interpreter1, interpreter2):
     figure(2)
     im2 = imshow(R2, cmap=cm.jet)
     im2.set_interpolation('bilinear')
+    colorbar()
+
+    show()
+
+
+def draw_diff_map(interpreter1, interpreter2):
+    x = arange(0.0, 1.00001, 0.025)
+    y = arange(0.0, 1.00001, 0.025)
+    X, Y = meshgrid(x, y)
+
+    R1 = []
+    for i in xrange(len(X)):
+        p1 = []
+        R1.append(p1)
+        for j in xrange(len(X[0])):
+            p1.append(math.fabs(interpreter1.get_value(X[i][j], Y[i][j]) -
+                                interpreter2.get_value(X[i][j], Y[i][j])))
+
+    figure(1)
+    im1 = imshow(R1, cmap=cm.jet)
+    im1.set_interpolation('bilinear')
     colorbar()
 
     show()
@@ -147,6 +172,7 @@ interpretators = map(get_interpretator, (filename1, filename2))
 commands = {"1": lambda: draw_two_value_maps(*interpretators),
             "2": lambda: get_x_section(*interpretators),
             "3": lambda: get_y_section(*interpretators),
+            "4": lambda: draw_diff_map(*interpretators),
             "0": sys.exit}
 
 while True:
@@ -155,6 +181,7 @@ while True:
  1. For two comparsion graphics
  2. For x=const section
  3. For y=const section
+ 4. For draw diff map
  0. For exiting"""
 
     command = raw_input("Your choise: ")

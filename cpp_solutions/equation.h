@@ -5,7 +5,6 @@ const double top_y = 1.0;
 
 double borders_func(double x, double y)
 {
-  return x*x + y*y;
   if (x == left_x) return y * y;
   if (x == right_x) return exp(y) + 1.0 - y;
   if (y == bottom_y) return 2.0 * x;
@@ -14,5 +13,5 @@ double borders_func(double x, double y)
 
 double f(double x, double y)
 {
-  return 4.0;
+  return 0.0;
 }
