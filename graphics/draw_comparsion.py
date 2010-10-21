@@ -9,8 +9,8 @@ from pylab import *
 import math
 
 
-class NeuroLoader(object):
-    Identifier = "Neuron"
+class RBFGaussLoader(object):
+    Identifier = "RBF-Gauss"
 
     def __init__(self, file_iter):
         self.data = []
@@ -22,7 +22,24 @@ class NeuroLoader(object):
         for w, a, c_x, c_y in self.data:
             d_x = c_x - x
             d_y = c_y - y
-            res += w * exp(- (d_x * d_x + d_y * d_y) / (a * a))
+            res += w * math.exp(- (d_x * d_x + d_y * d_y) / (a * a))
+        return res
+
+
+class RBFMQLoader(object):
+    Identifier = "RBF-MQ"
+
+    def __init__(self, file_iter):
+        self.data = []
+        for line in file_iter:
+            self.data.append(map(float, line.strip().split()))
+
+    def get_value(self, x, y):
+        res = 0.0
+        for w, a, c_x, c_y in self.data:
+            d_x = c_x - x
+            d_y = c_y - y
+            res += w * math.sqrt(d_x * d_x + d_y * d_y + a * a)
         return res
 
 
@@ -176,7 +193,7 @@ def get_y_section(interpreter1, interpreter2):
 
 def get_interpretator(filename):
     file_iter = iter(open(filename, "r"))
-    loaders = [NeuroLoader, GridLoader]
+    loaders = [RBFGaussLoader, RBFMQLoader, GridLoader]
     interpreter = file_iter.next().strip()
     return filter(lambda cl: cl.Identifier == interpreter,
                   loaders)[0](file_iter)
