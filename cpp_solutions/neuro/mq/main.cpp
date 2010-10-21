@@ -8,17 +8,17 @@
 
 #define sqr(a) ((a)*(a))
 
-const int NEURONS = 50;
-const int POINTS_INNER = 40;
-const int POINTS_BORDER = 50; // точек на каждой границе
+const int NEURONS = 20;
+const int POINTS_INNER = 200;
+const int POINTS_BORDER = 100; // точек на каждой границе
 const int ALL_POINTS = POINTS_INNER + 4 * POINTS_BORDER;
 
-const double DELTA = 1;
+const double DELTA = 1000;
 
 const double W_MIN = -100;
 const double W_MAX = 100;
-const double A_MIN = 0.3;
-const double A_MAX = 6.0;
+const double A_MIN = 0.05;
+const double A_MAX = 1.5;
 const double C_X_MIN = -0.5;
 const double C_X_MAX = 1.5;
 const double C_Y_MIN = -0.5;
