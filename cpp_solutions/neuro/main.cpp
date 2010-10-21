@@ -32,14 +32,26 @@ inline double calc_neuron(double *a, double x, double y) {
   double x_d = x - a[2];
   double y_d = y - a[3];
   double a_q = a[1];
-  return a[0] * exp(-(sqr(x_d) + sqr(y_d)) / sqr(a_q));
+//  return a[0] * exp(-(sqr(x_d) + sqr(y_d)) / sqr(a_q)); // RBF for w*e^(-((c1-x)^2 + (c2-y)^2) / a^2)
+  return a[0] * sqrt(sqr(x_d) + sqr(y_d) + sqr(a_q)); // RBF for w*sqrt((c1-x)^2 + (c2-y)^2 + a^2)
+}
+
+inline double WQ_sample(double *a, double x, double y)
+{
+  double x_d = x - a[2];
+  double y_d = y - a[3];
+  double a_q = a[1];
+  return 1.0 / sqrt(sqr(x_d) + sqr(y_d) + sqr(a_q));
 }
 
 double laplace(double *a, int n, double x, double y) {
   double res = 0.0;
   for (int i = 0; i < n; i++) {
-    res += -2.0 * calc_neuron(&a[4 * i], x, y) / sqr(a[i * 4 + 1]) + \
-      4.0 * calc_neuron(&a[4 * i], x, y) * sqr(x - y) / sqr(sqr(a[i * 4 + 1]));
+//    res += -2.0 * calc_neuron(&a[4 * i], x, y) / sqr(a[i * 4 + 1]) + \
+//      4.0 * calc_neuron(&a[4 * i], x, y) * sqr(x - y) / sqr(sqr(a[i * 4 + 1])); // RBF for w*e^(-((c1-x)^2 + (c2-y)^2) / a^2)
+	  res += a[0] * (2.0 * WQ_sample(&a[4 * i], x, y) - \
+	    fabs(a[4 * i + 2] - x) * pow(WQ_sample(&a[4 * i], x, y), 3.0) - \
+	    fabs(a[4 * i + 3] - y) * pow(WQ_sample(&a[4 * i], x, y), 3.0)); // RBF for w*sqrt((c1-x)^2 + (c2-y)^2 + a^2)
   }
   return res;
 }
