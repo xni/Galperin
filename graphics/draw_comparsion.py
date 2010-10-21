@@ -6,6 +6,7 @@
 from __future__ import division
 import sys
 from pylab import *
+import math
 
 
 class NeuroLoader(object):
@@ -76,6 +77,17 @@ class GridLoader(object):
         return interpolation
 
 
+class Exact(object):
+    Identifier = "Exact"
+
+    def __init__(self):
+        pass
+
+    def get_value(self, x, y):
+        return -1.0 * math.sin(math.pi * x) * math.sin(math.pi * y) / (
+            2.0 * math.pi * math.pi)
+
+
 def draw_two_value_maps(interpreter1, interpreter2):
     x = arange(0.0, 1.00001, 0.025)
     y = arange(0.0, 1.00001, 0.025)
@@ -129,14 +141,17 @@ def draw_diff_map(interpreter1, interpreter2):
 def get_x_section(interpreter1, interpreter2):
     x = float(raw_input("Input x=const: ").strip())
     y = arange(0.0, 1.0001, 0.025)
+    interpreter3 = Exact()
     i1 = [interpreter1.get_value(x, y_i) for y_i in y]
     i2 = [interpreter2.get_value(x, y_i) for y_i in y]
+    i3 = [interpreter3.get_value(x, y_i) for y_i in y]
     figure(1)
     xlabel('$x$')
     ylabel('$y$')
     title(ur'Сравнение сечений функций плоскостью $x = %.1f$' % x)
     plot(y, i1, label=interpreter1.Identifier, color='red')    
-    plot(y, i2, label=interpreter2.Identifier, color='green')    
+    plot(y, i2, label=interpreter2.Identifier, color='green')
+    plot(y, i3, label=interpreter3.Identifier, color='blue')
     legend(loc='upper right')
     show()
 
@@ -144,14 +159,17 @@ def get_x_section(interpreter1, interpreter2):
 def get_y_section(interpreter1, interpreter2):
     y = float(raw_input("Input y=const: ").strip())
     x = arange(0.0, 1.0001, 0.025)
+    interpreter3 = Exact()
     i1 = [interpreter1.get_value(x_i, y) for x_i in x]
     i2 = [interpreter2.get_value(x_i, y) for x_i in x]
+    i3 = [interpreter3.get_value(x_i, y) for x_i in x]
     figure(1)
     xlabel('$x$')
     ylabel('$y$')
     title(ur'Сравнение сечений функций плоскостью $y = %.1f$' % y)
     plot(x, i1, label=interpreter1.Identifier, color='red')    
-    plot(x, i2, label=interpreter2.Identifier, color='green')    
+    plot(x, i2, label=interpreter2.Identifier, color='green')
+    plot(x, i3, label=interpreter3.Identifier, color='blue')    
     legend(loc='upper right')
     show()
     
