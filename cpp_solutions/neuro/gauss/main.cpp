@@ -4,7 +4,7 @@
 #include <ctime>
 #include <iomanip>
 #include <fstream>
-#include "../equation.h"
+#include "../../equation.h"
 
 #define sqr(a) ((a)*(a))
 
