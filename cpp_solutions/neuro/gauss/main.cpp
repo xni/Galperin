@@ -8,17 +8,17 @@
 
 #define sqr(a) ((a)*(a))
 
-const int NEURONS = 20;
-const int POINTS_INNER = 200;
-const int POINTS_BORDER = 100; // точек на каждой границе
+const int NEURONS = 50;
+const int POINTS_INNER = 40;
+const int POINTS_BORDER = 50; // точек на каждой границе
 const int ALL_POINTS = POINTS_INNER + 4 * POINTS_BORDER;
 
-const double DELTA = 1000;
+const double DELTA = 1;
 
 const double W_MIN = -100;
 const double W_MAX = 100;
-const double A_MIN = 0.05;
-const double A_MAX = 1.5;
+const double A_MIN = 0.3;
+const double A_MAX = 6.0;
 const double C_X_MIN = -0.5;
 const double C_X_MAX = 1.5;
 const double C_Y_MIN = -0.5;
@@ -32,8 +32,7 @@ inline double calc_neuron(double *a, double x, double y) {
   double x_d = x - a[2];
   double y_d = y - a[3];
   double a_q = a[1];
-//  return a[0] * exp(-(sqr(x_d) + sqr(y_d)) / sqr(a_q)); // RBF for w*e^(-((c1-x)^2 + (c2-y)^2) / a^2)
-  return a[0] * sqrt(sqr(x_d) + sqr(y_d) + sqr(a_q)); // RBF for w*sqrt((c1-x)^2 + (c2-y)^2 + a^2)
+  return a[0] * exp(-(sqr(x_d) + sqr(y_d)) / sqr(a_q));
 }
 
 inline double WQ_sample(double *a, double x, double y)
@@ -47,11 +46,8 @@ inline double WQ_sample(double *a, double x, double y)
 double laplace(double *a, int n, double x, double y) {
   double res = 0.0;
   for (int i = 0; i < n; i++) {
-//    res += -2.0 * calc_neuron(&a[4 * i], x, y) / sqr(a[i * 4 + 1]) + \
-//      4.0 * calc_neuron(&a[4 * i], x, y) * sqr(x - y) / sqr(sqr(a[i * 4 + 1])); // RBF for w*e^(-((c1-x)^2 + (c2-y)^2) / a^2)
-	  res += a[0] * (2.0 * WQ_sample(&a[4 * i], x, y) - \
-	    fabs(a[4 * i + 2] - x) * pow(WQ_sample(&a[4 * i], x, y), 3.0) - \
-	    fabs(a[4 * i + 3] - y) * pow(WQ_sample(&a[4 * i], x, y), 3.0)); // RBF for w*sqrt((c1-x)^2 + (c2-y)^2 + a^2)
+    res += -2.0 * calc_neuron(&a[4 * i], x, y) / sqr(a[i * 4 + 1]) + \
+      4.0 * calc_neuron(&a[4 * i], x, y) * sqr(x - y) / sqr(sqr(a[i * 4 + 1]));
   }
   return res;
 }
@@ -231,7 +227,7 @@ int main() {
   generate_box_points();
   generate_test_points();
   int p = box_method();
-  std::cout << "Neuron" << std::endl;
+  std::cout << "RBF-Gauss" << std::endl;
   for (int i=0; i < NEURONS; ++i) {
     std::cout << box_points[p][i * 4] << " " << box_points[p][i * 4 + 1] << " " \
 	      << box_points[p][i * 4 + 2] << " " << box_points[p][i * 4 + 3];
