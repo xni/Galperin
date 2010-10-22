@@ -8,12 +8,16 @@
 
 #define sqr(a) ((a)*(a))
 
+/*
+  RBF-MQ
+*/
+
 const int NEURONS = 50;
 const int POINTS_INNER = 400;
 const int POINTS_BORDER = 300; // точек на каждой границе
 const int ALL_POINTS = POINTS_INNER + 4 * POINTS_BORDER;
 
-const double DELTA = 100;
+const double DELTA = 1;
 
 const double W_MIN = -100;
 const double W_MAX = 100;
