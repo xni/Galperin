@@ -8,17 +8,17 @@
 
 #define sqr(a) ((a)*(a))
 
-const int NEURONS = 20;
-const int POINTS_INNER = 200;
-const int POINTS_BORDER = 100; // точек на каждой границе
+const int NEURONS = 50;
+const int POINTS_INNER = 400;
+const int POINTS_BORDER = 300; // точек на каждой границе
 const int ALL_POINTS = POINTS_INNER + 4 * POINTS_BORDER;
 
-const double DELTA = 1000;
+const double DELTA = 100;
 
 const double W_MIN = -100;
 const double W_MAX = 100;
-const double A_MIN = 0.05;
-const double A_MAX = 1.5;
+const double A_MIN = 0;
+const double A_MAX = 10;
 const double C_X_MIN = -0.5;
 const double C_X_MAX = 1.5;
 const double C_Y_MIN = -0.5;
@@ -46,9 +46,10 @@ inline double WQ_sample(double *a, double x, double y)
 double laplace(double *a, int n, double x, double y) {
   double res = 0.0;
   for (int i = 0; i < n; i++) {
-	  res += a[0] * (2.0 * WQ_sample(&a[4 * i], x, y) - \
-	    fabs(a[4 * i + 2] - x) * pow(WQ_sample(&a[4 * i], x, y), 3.0) - \
-	    fabs(a[4 * i + 3] - y) * pow(WQ_sample(&a[4 * i], x, y), 3.0));
+    double wqs = WQ_sample(&a[4 * i], x, y);
+    double dx = a[4 * i + 2] - x;
+    double dy = a[4 * i + 3] - y;
+    res += a[4 * i] * wqs * (2.0  -  sqr(dx) * wqs * wqs - sqr(dy) * wqs * wqs);
   }
   return res;
 }
