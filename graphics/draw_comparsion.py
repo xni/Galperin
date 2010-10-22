@@ -119,7 +119,7 @@ def draw_two_value_maps(interpreter1, interpreter2):
         R2.append(p2)
         for j in xrange(len(X[0])):
             p1.append(interpreter1.get_value(X[i][j], Y[i][j]))
-            p2.append(interpreter1.get_value(X[i][j], Y[i][j]))
+            p2.append(interpreter2.get_value(X[i][j], Y[i][j]))
 
     figure(1)
     im1 = imshow(R1, cmap=cm.jet)
