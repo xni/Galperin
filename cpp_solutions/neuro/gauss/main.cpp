@@ -12,7 +12,7 @@
   RBF-Gauss
 */
 
-const int NEURONS = 10;
+const int NEURONS = 50;
 const int POINTS_INNER = 400;
 const int POINTS_BORDER = 300; // точек на каждой границе
 const int ALL_POINTS = POINTS_INNER + 4 * POINTS_BORDER;

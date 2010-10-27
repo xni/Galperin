@@ -9,15 +9,16 @@
 #define sqr(a) ((a)*(a))
 
 /*
-  RBF-MQ
+  RBF-INDIRECT-MQ
 */
 
-const int NEURONS = 50;
+const int NEURONS = 10;
+const int P = 5;                // Для апроксимации функций Ci
 const int POINTS_INNER = 200;
 const int POINTS_BORDER = 50; // точек на каждой границе
 const int ALL_POINTS = POINTS_INNER + 4 * POINTS_BORDER;
 
-const double DELTA = 1;
+const double DELTA = 1000;
 
 const double W_MIN = -100;
 const double W_MAX = 100;
@@ -28,9 +29,12 @@ const double C_X_MAX = 1.5;
 const double C_Y_MIN = -0.5;
 const double C_Y_MAX = 1.5;
 
-double box_points[2 * NEURONS * 4][4 * NEURONS];
+const int NEURAL_DIMENSION = 4 * (2 * NEURONS + 4 * P);
+// Uxx Uyy C1 C2 C3 C4
+
+double box_points[2 * NEURAL_DIMENSION][NEURAL_DIMENSION];
 double test_points[ALL_POINTS][2];
-double cached_values[2 * NEURONS * 4];
+double cached_values[2 * NEURAL_DIMENSION];
 
 inline double calc_neuron(double *a, double x, double y) 
 {
@@ -40,46 +44,66 @@ inline double calc_neuron(double *a, double x, double y)
   return a[0] * sqrt(sqr(x_d) + sqr(y_d) + sqr(a_q));
 }
 
-inline double MQ_sample(double *a, double x, double y)
-{
-  double x_d = x - a[2];
-  double y_d = y - a[3];
-  double a_q = a[1];
-  return 1.0 / sqrt(sqr(x_d) + sqr(y_d) + sqr(a_q));
-}
-
-double derivative(double *a, int n, double x, double y, int pos)
+double calc_Uxx(double *a, double x, double y)   // Вторая производная по х
 {
   double res = 0.0;
-  for (int i = 0; i < n; ++i)
+  for (int i = 0; i < NEURONS; ++i)
   {
-    double mqs = MQ_sample(&a[4 * i], x, y);
-    double dx = x - a[4 * i + 2];
-    double dy = y - a[4 * i + 3];
-    res += a[4 * i] * mqs * ((pos==1) ? (dx) : (dy));
+      res += calc_neuron(&a[4 * i], x, y);
   }
   return res;
 }
 
-double laplace(double *a, int n, double x, double y) 
+double calc_Uyy(double *a, double x, double y)   // Вторая производная по y
 {
   double res = 0.0;
-  for (int i = 0; i < n; i++) 
+  for (int i = NEURONS; i < 2 * NEURONS; ++i)
   {
-    double mqs = MQ_sample(&a[4 * i], x, y);
-    double dx = x - a[4 * i + 2];
-    double dy = y - a[4 * i + 3];
-    res += a[4 * i] * mqs * (2.0  -  sqr(dx) * sqr(mqs) - sqr(dy) * sqr(mqs));
+      res += calc_neuron(&a[4 * i], x, y);
   }
   return res;
 }
 
-double calc(double *a, int n, double x, double y) 
+double calc_U1(double *a, double x, double y)
 {
-  double res = 0.0;
-  for (int i = 0; i < n; ++i) 
+  double res = 0;
+  for (int i = 0; i < NEURONS; ++i)
   {
-    res += calc_neuron(&a[i * 4], x, y);
+      double r2 = sqr(x - a[4 * i + 2]) + sqr(y - a[4 * i + 3]);
+      double dx = x - a[4 * i + 2];
+      double a2 = sqr(a[4 * i + 1]);
+      res += pow((r2 + a2), 1.5) / 6.0 + \
+               0.5 * (r2 - sqr(dx) + a2) * (dx * log(dx + sqrt(r2 + a2)) - sqrt(r2 + a2));
+  }
+  for (int i = 2 * NEURONS; i < 2 * NEURONS + P; ++i)
+  {
+      res += x * calc_neuron(&a[4 * i], x, y);
+  }
+  for (int i = 2 * NEURONS + P; i < 2 * NEURONS + 2 * P; ++i)
+  {
+      res += calc_neuron(&a[4 * i], x, y);
+  }
+  return res;
+}
+
+double calc_U2(double *a, double x, double y)
+{
+  double res = 0;
+  for (int i = NEURONS; i < 2 * NEURONS; ++i)
+  {
+      double r2 = sqr(x - a[4 * i + 2]) + sqr(y - a[4 * i + 3]);
+      double dy = y - a[4 * i + 3];
+      double a2 = sqr(a[4 * i + 1]);
+      res += pow((r2 + a2), 1.5) / 6.0 + \
+               0.5 * (r2 - sqr(dy) + a2) * (dy * log(dy + sqrt(r2 + a2)) - sqrt(r2 + a2));
+  }
+  for (int i = 2 * NEURONS + 2 * P; i < 2 * NEURONS + 3 * P; ++i)
+  {
+      res += y * calc_neuron(&a[4 * i], x, y);
+  }
+  for (int i = 2 * NEURONS + 3 * P; i < 2 * NEURONS + 4 * P; ++i)
+  {
+      res += calc_neuron(&a[4 * i], x, y);
   }
   return res;
 }
@@ -119,27 +143,18 @@ double J(double *a)
   double res = 0.0;
   for (int i = 0; i < POINTS_INNER; i++) 
   {
-    double tmp = laplace(a, NEURONS, test_points[i][0], test_points[i][1]) \
-      - f(test_points[i][0], test_points[i][1]);
+    double x = test_points[i][0];
+    double y = test_points[i][1];
+    double tmp = calc_Uxx(a, x, y) + calc_Uyy(a, x, y) - f(x, y);
     res += sqr(tmp);
+    tmp = calc_U1(a, x, y) - calc_U2(a, x, y);
+    res += 10*sqr(tmp);
   }
   for (int i = POINTS_INNER; i < ALL_POINTS; i++) 
   {
-   // double tmp =  calc(a, NEURONS, test_points[i][0], test_points[i][1]) - \
-   //   borders_func(test_points[i][0], test_points[i][1]);
-    double tmp;
-    if (test_points[i][0] == left_x)  
-      tmp =  derivative(a, NEURONS, test_points[i][0], test_points[i][1], 1) - \
-        borders_func(test_points[i][0], test_points[i][1]);
-    if (test_points[i][0] == right_x)  
-      tmp =  calc(a, NEURONS, test_points[i][0], test_points[i][1]) - \
-        borders_func(test_points[i][0], test_points[i][1]);
-    if (test_points[i][1] == bottom_y)  
-      tmp =  derivative(a, NEURONS, test_points[i][0], test_points[i][1], 2) - \
-        borders_func(test_points[i][0], test_points[i][1]);
-    if (test_points[i][1] == top_y)  
-      tmp =  calc(a, NEURONS, test_points[i][0], test_points[i][1]) - \
-        borders_func(test_points[i][0], test_points[i][1]);
+    double x = test_points[i][0];
+    double y = test_points[i][1];
+    double tmp = calc_U1(a, x, y) - borders_func(x, y);
     res += DELTA * sqr(tmp);
   }
   return res;
@@ -147,9 +162,9 @@ double J(double *a)
 
 void generate_box_points() 
 {
-  for (int c = 0; c < 2 * NEURONS * 4; c++) 
+  for (int c = 0; c < 2 * NEURAL_DIMENSION; c++) 
   { 
-    for (int i = 0; i < NEURONS; i++) 
+    for (int i = 0; i < 2 * NEURONS + 4 * P ; i++) 
     {
       box_points[c][4 * i] = W_MIN + (W_MAX - W_MIN) * double(rand()) / RAND_MAX;
       box_points[c][4 * i + 1] = A_MIN + (A_MAX - A_MIN) * rand() / RAND_MAX;
@@ -169,7 +184,7 @@ int box_method()
     // Finding the worst point
     int max_index = 0;
     double max_error = 0.0;
-    for (int i = 0; i < 2 * NEURONS * 4; ++i) 
+    for (int i = 0; i < 2 * NEURAL_DIMENSION; ++i) 
     {
       double tmp = cached_values[i];
       if (tmp > max_error) 
@@ -180,15 +195,15 @@ int box_method()
     }
 
     // Finding the centre of gravity
-    double cog[4 * NEURONS] = {0};
-    for (int i = 0; i < 4 * NEURONS; ++i) 
+    double cog[NEURAL_DIMENSION] = {0};
+    for (int i = 0; i < NEURAL_DIMENSION; ++i) 
     {
-      for (int j = 0; j < 2 * NEURONS * 4; ++j) 
+      for (int j = 0; j < 2 * NEURAL_DIMENSION; ++j) 
       {
         if (j == max_index) continue;
         cog[i] += box_points[j][i];
       }
-      cog[i] /= 2 * NEURONS * 4 - 1;
+      cog[i] /= 2 * NEURAL_DIMENSION - 1;
     }
     
     // End of calculations
@@ -196,7 +211,7 @@ int box_method()
     {
       double sum = 0.0;
       double tmp = J(&cog[0]);
-      for (int i = 0; i < 2 * NEURONS * 4; ++i) 
+      for (int i = 0; i < 2 * NEURAL_DIMENSION; ++i) 
       {
         sum += sqr(tmp - cached_values[i]);
       }
@@ -205,7 +220,7 @@ int box_method()
         // Finding the best point
         int min_index = 0;
         double min_error = 1e307;
-        for (int i = 0; i < 2 * NEURONS * 4; ++i) 
+        for (int i = 0; i < 2 * NEURAL_DIMENSION; ++i) 
         {
           double tmp = cached_values[i];
           if (tmp < min_error) 
@@ -216,7 +231,7 @@ int box_method()
         }
       return min_index;
       }
-      std::cerr << "Max error = " << max_error << std::endl;
+      std::cerr << "Max error = " << std::setprecision(15) << max_error << std::endl;
     }
     
     // Box method
@@ -224,8 +239,8 @@ int box_method()
     bool good_point = false;
     for (int i = 0; i < 10; ++i) 
     {
-      double new_point[4 * NEURONS];
-      for (int j = 0; j < 4 * NEURONS; ++j) 
+      double new_point[NEURAL_DIMENSION];
+      for (int j = 0; j < NEURAL_DIMENSION; ++j) 
       {
         new_point[j] = cog[j] + c * (cog[j] - box_points[max_index][j]);
         int type = j % 4;
@@ -257,7 +272,7 @@ int box_method()
       else 
       {
         good_point = true;
-        for (int i = 0; i < 4 * NEURONS; i++) 
+        for (int i = 0; i < NEURAL_DIMENSION; i++) 
         {
           box_points[max_index][i] = new_point[i];
         }
@@ -272,7 +287,7 @@ int box_method()
       // Finding the best point
       int min_index = 0;
       double min_error = 1e307;
-      for (int i = 0; i < 2 * NEURONS * 4; ++i) 
+      for (int i = 0; i < 2 * NEURAL_DIMENSION; ++i) 
       {
         double tmp = cached_values[i];
         if (tmp < min_error) 
@@ -281,9 +296,9 @@ int box_method()
           min_index = i;
         }
       }
-      for (int i = 0; i < 2 * NEURONS * 4; ++i) 
+      for (int i = 0; i < 2 * NEURAL_DIMENSION; ++i) 
       {
-        for (int j = 0; j < 4 * NEURONS; ++j) 
+        for (int j = 0; j < NEURAL_DIMENSION; ++j) 
         {
           box_points[i][j] = box_points[min_index][j] \
             + 0.5 * (box_points[i][j] - box_points[min_index][j]);
@@ -300,8 +315,8 @@ int main()
   generate_box_points();
   generate_test_points();
   int p = box_method();
-  std::cout << "RBF-MQ" << std::endl;
-  for (int i=0; i < NEURONS; ++i) 
+  std::cout << "RBF-INDIRECT-MQ" << std::endl;
+  for (int i = 0; i < 2 * NEURONS + 4 * P; ++i) 
   {
     std::cout << box_points[p][i * 4] << " " << box_points[p][i * 4 + 1] << " " \
         << box_points[p][i * 4 + 2] << " " << box_points[p][i * 4 + 3];

@@ -42,6 +42,35 @@ class RBFMQLoader(object):
             res += w * math.sqrt(d_x * d_x + d_y * d_y + a * a)
         return res
 
+class RBFIndirectMQLoader(object):
+    Identifier = "RBF-INDIRECT-MQ"
+
+    def __init__(self, file_iter):
+        self.data = []
+        for line in file_iter:
+            self.data.append(map(float, line.strip().split()))
+
+    def get_value(self, x, y):
+        self.n = 10
+        self.p = 5
+        res = 0.0
+        for w, a, c_x, c_y in self.data[0 : self.n]:
+            d_x = c_x - x
+            d_y = c_y - y
+            r2 = d_x * d_x + d_y * d_y
+            a2 = a * a
+            res += math.pow((r2 + a2), 1.5) / 6.0 + \
+              0.5 * (r2 - d_x * d_x + a2) * (d_x * math.log(d_x + math.sqrt(r2 + a2)) - math.sqrt(r2 + a2))
+        for w, a, c_x, c_y in self.data[self.n * 2 : self.n * 2 + self.p]:
+            d_x = c_x - x
+            d_y = c_y - y
+            res += x * (w * math.sqrt(d_x * d_x + d_y * d_y + a * a))
+        for w, a, c_x, c_y in self.data[self.n * 2 + self.p : self.n * 2 + self.p * 2]:
+            d_x = c_x - x
+            d_y = c_y - y
+            res += w * math.sqrt(d_x * d_x + d_y * d_y + a * a)
+        return res
+
 
 class GridLoader(object):
     Identifier = "Grid"
@@ -101,25 +130,34 @@ class Exact(object):
         pass
 
     def get_value(self, x, y):
-        return -1.0 * math.sin(math.pi * x) * math.sin(math.pi * y) / (
-            2.0 * math.pi * math.pi)
+        return x*x - y*y
+
+    #def get_value(self, x, y):
+    #    return -1.0 * math.sin(math.pi * x) * math.sin(math.pi * y) / (
+    #        2.0 * math.pi * math.pi)
 
 
 def draw_two_value_maps(interpreter1, interpreter2):
     x = arange(0.0, 1.00001, 0.025)
     y = arange(0.0, 1.00001, 0.025)
     X, Y = meshgrid(x, y)
+    
+    interpreter3 = Exact()
 
     R1 = []
     R2 = []
+    R3 = []
     for i in xrange(len(X)):
         p1 = []
         p2 = []
+        p3 = []
         R1.append(p1)
         R2.append(p2)
+        R3.append(p3)
         for j in xrange(len(X[0])):
             p1.append(interpreter1.get_value(X[i][j], Y[i][j]))
             p2.append(interpreter2.get_value(X[i][j], Y[i][j]))
+            p3.append(interpreter3.get_value(X[i][j], Y[i][j]))
 
     figure(1)
     im1 = imshow(R1, cmap=cm.jet)
@@ -129,6 +167,11 @@ def draw_two_value_maps(interpreter1, interpreter2):
     figure(2)
     im2 = imshow(R2, cmap=cm.jet)
     im2.set_interpolation('bilinear')
+    colorbar()
+    
+    figure(3)
+    im3 = imshow(R3, cmap=cm.jet)
+    im3.set_interpolation('bilinear')
     colorbar()
 
     show()
@@ -193,7 +236,7 @@ def get_y_section(interpreter1, interpreter2):
 
 def get_interpretator(filename):
     file_iter = iter(open(filename, "r"))
-    loaders = [RBFGaussLoader, RBFMQLoader, GridLoader]
+    loaders = [RBFGaussLoader, RBFMQLoader, RBFIndirectMQLoader, GridLoader]
     interpreter = file_iter.next().strip()
     return filter(lambda cl: cl.Identifier == interpreter,
                   loaders)[0](file_iter)
