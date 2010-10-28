@@ -72,8 +72,8 @@ double calc_U1(double *a, double x, double y)
       double r2 = sqr(x - a[4 * i + 2]) + sqr(y - a[4 * i + 3]);
       double dx = x - a[4 * i + 2];
       double a2 = sqr(a[4 * i + 1]);
-      res += pow((r2 + a2), 1.5) / 6.0 + \
-               0.5 * (r2 - sqr(dx) + a2) * (dx * log(dx + sqrt(r2 + a2)) - sqrt(r2 + a2));
+      res += a[4 * i] * (pow((r2 + a2), 1.5) / 6.0 +			\
+			 0.5 * (r2 - sqr(dx) + a2) * (dx * log(dx + sqrt(r2 + a2)) - sqrt(r2 + a2)));
   }
   for (int i = 2 * NEURONS; i < 2 * NEURONS + P; ++i)
   {
@@ -94,8 +94,8 @@ double calc_U2(double *a, double x, double y)
       double r2 = sqr(x - a[4 * i + 2]) + sqr(y - a[4 * i + 3]);
       double dy = y - a[4 * i + 3];
       double a2 = sqr(a[4 * i + 1]);
-      res += pow((r2 + a2), 1.5) / 6.0 + \
-               0.5 * (r2 - sqr(dy) + a2) * (dy * log(dy + sqrt(r2 + a2)) - sqrt(r2 + a2));
+      res += a[4 * i] * (pow((r2 + a2), 1.5) / 6.0 +			\
+			 0.5 * (r2 - sqr(dy) + a2) * (dy * log(dy + sqrt(r2 + a2)) - sqrt(r2 + a2)));
   }
   for (int i = 2 * NEURONS + 2 * P; i < 2 * NEURONS + 3 * P; ++i)
   {
@@ -155,6 +155,7 @@ double J(double *a)
     double x = test_points[i][0];
     double y = test_points[i][1];
     double tmp = calc_U1(a, x, y) - borders_func(x, y);
+    //std::cerr << "On border diff " << tmp << std::endl;
     res += DELTA * sqr(tmp);
   }
   return res;
@@ -321,6 +322,13 @@ int main()
     std::cout << box_points[p][i * 4] << " " << box_points[p][i * 4 + 1] << " " \
         << box_points[p][i * 4 + 2] << " " << box_points[p][i * 4 + 3];
     std::cout << std::endl;
+  }
+
+  for (double i = 0.0; i <= 1.00001; i+=0.1) {
+    for (double j = 0.0; j <= 1.00001; j+=0.1) {
+      std::cerr << calc_U1(&box_points[p][0], i, j) << " ";
+    }
+    std::cerr << std::endl;
   }
   return 0;
 }

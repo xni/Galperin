@@ -55,12 +55,12 @@ class RBFIndirectMQLoader(object):
         self.p = 5
         res = 0.0
         for w, a, c_x, c_y in self.data[0 : self.n]:
-            d_x = c_x - x
-            d_y = c_y - y
+            d_x = x - c_x
+            d_y = y - c_y
             r2 = d_x * d_x + d_y * d_y
             a2 = a * a
-            res += math.pow((r2 + a2), 1.5) / 6.0 + \
-              0.5 * (r2 - d_x * d_x + a2) * (d_x * math.log(d_x + math.sqrt(r2 + a2)) - math.sqrt(r2 + a2))
+            res += w * (math.pow((r2 + a2), 1.5) / 6.0 + \
+              0.5 * (r2 - d_x * d_x + a2) * (d_x * math.log(d_x + math.sqrt(r2 + a2)) - math.sqrt(r2 + a2)))
         for w, a, c_x, c_y in self.data[self.n * 2 : self.n * 2 + self.p]:
             d_x = c_x - x
             d_y = c_y - y
@@ -129,12 +129,12 @@ class Exact(object):
     def __init__(self):
         pass
 
-    def get_value(self, x, y):
-        return x*x - y*y
-
     #def get_value(self, x, y):
-    #    return -1.0 * math.sin(math.pi * x) * math.sin(math.pi * y) / (
-    #        2.0 * math.pi * math.pi)
+    #    return x*x - y*y
+
+    def get_value(self, x, y):
+        return -1.0 * math.sin(math.pi * x) * math.sin(math.pi * y) / (
+            2.0 * math.pi * math.pi)
 
 
 def draw_two_value_maps(interpreter1, interpreter2):
