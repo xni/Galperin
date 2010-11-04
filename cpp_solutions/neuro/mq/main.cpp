@@ -129,16 +129,20 @@ double J(double *a)
    //   borders_func(test_points[i][0], test_points[i][1]);
     double tmp;
     if (test_points[i][0] == left_x)  
-      tmp =  derivative(a, NEURONS, test_points[i][0], test_points[i][1], 1) - \
+      tmp =  border_derivatives[0] ? derivative(a, NEURONS, test_points[i][0], test_points[i][1], 1) - \
+        borders_func(test_points[i][0], test_points[i][1]) : calc(a, NEURONS, test_points[i][0], test_points[i][1]) - \
         borders_func(test_points[i][0], test_points[i][1]);
     if (test_points[i][0] == right_x)  
-      tmp =  calc(a, NEURONS, test_points[i][0], test_points[i][1]) - \
+      tmp =  border_derivatives[1] ? derivative(a, NEURONS, test_points[i][0], test_points[i][1], 1) - \
+        borders_func(test_points[i][0], test_points[i][1]) : calc(a, NEURONS, test_points[i][0], test_points[i][1]) - \
         borders_func(test_points[i][0], test_points[i][1]);
     if (test_points[i][1] == bottom_y)  
-      tmp =  derivative(a, NEURONS, test_points[i][0], test_points[i][1], 2) - \
+      tmp =  border_derivatives[2] ? derivative(a, NEURONS, test_points[i][0], test_points[i][1], 2) - \
+        borders_func(test_points[i][0], test_points[i][1]) : calc(a, NEURONS, test_points[i][0], test_points[i][1]) - \
         borders_func(test_points[i][0], test_points[i][1]);
     if (test_points[i][1] == top_y)  
-      tmp =  calc(a, NEURONS, test_points[i][0], test_points[i][1]) - \
+      tmp =  border_derivatives[3] ? derivative(a, NEURONS, test_points[i][0], test_points[i][1], 2) - \
+        borders_func(test_points[i][0], test_points[i][1]) : calc(a, NEURONS, test_points[i][0], test_points[i][1]) - \
         borders_func(test_points[i][0], test_points[i][1]);
     res += DELTA * sqr(tmp);
   }
@@ -300,12 +304,22 @@ int main()
   generate_box_points();
   generate_test_points();
   int p = box_method();
-  std::cout << "RBF-MQ" << std::endl;
+  double E = 0.0;
+  for (double x = left_x; x <= right_x + 0.00001; x += 0.005)
+  {
+    for (double y = bottom_y; y <= top_y + 0.00001; y += 0.005)
+    {
+        double tmp = calc(&box_points[p][0], NEURONS, x, y) - borders_func(x, y);
+        E += sqr(tmp);
+    }
+  }
+  std::cout << "Problem 1\t" << NEURONS << "\t" << POINTS_INNER << "\t" << POINTS_BORDER << "\t" << DELTA << "\t" << cached_values[p] << "\t" << E << std::endl;  
+/*  std::cout << "RBF-MQ" << std::endl;
   for (int i=0; i < NEURONS; ++i) 
   {
     std::cout << box_points[p][i * 4] << " " << box_points[p][i * 4 + 1] << " " \
         << box_points[p][i * 4 + 2] << " " << box_points[p][i * 4 + 3];
     std::cout << std::endl;
-  }
+  }*/
   return 0;
 }
