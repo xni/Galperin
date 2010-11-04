@@ -220,7 +220,7 @@ int box_method()
         }
       return min_index;
       }
-      std::cerr << "Max error = " << max_error << std::endl;
+      //std::cerr << "Max error = " << max_error << std::endl;
     }
     
     // Box method
