@@ -309,7 +309,7 @@ int main()
   {
     for (double y = bottom_y; y <= top_y + 0.00001; y += 0.005)
     {
-        double tmp = calc(&box_points[p][0], NEURONS, x, y) - borders_func(x, y);
+        double tmp = calc(&box_points[p][0], NEURONS, x, y) - solution(x, y);
         E += sqr(tmp);
     }
   }

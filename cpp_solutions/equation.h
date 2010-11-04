@@ -7,6 +7,11 @@ const double top_y = 1.0;
 
 const bool border_derivatives[] = {false, false, false, false};
 
+double solution(double x, double y)
+{
+   return x + y; 
+}
+
 double borders_func(double x, double y)
 {
   return x + y;
