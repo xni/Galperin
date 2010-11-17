@@ -17,7 +17,7 @@ const int POINTS_INNER = 200;
 const int POINTS_BORDER = 50; // точек на каждой границе
 const int ALL_POINTS = POINTS_INNER + 4 * POINTS_BORDER;
 
-const double DELTA = 1;
+const double DELTA = 50;
 
 const double W_MIN = -100;
 const double W_MAX = 100;
@@ -48,10 +48,10 @@ inline double MQ_sample(double *a, double x, double y)
   return 1.0 / sqrt(sqr(x_d) + sqr(y_d) + sqr(a_q));
 }
 
-double derivative(double *a, int n, double x, double y, int pos)
+double derivative(double *a, double x, double y, int pos)
 {
   double res = 0.0;
-  for (int i = 0; i < n; ++i)
+  for (int i = 0; i < NEURONS; ++i)
   {
     double mqs = MQ_sample(&a[4 * i], x, y);
     double dx = x - a[4 * i + 2];
@@ -61,10 +61,10 @@ double derivative(double *a, int n, double x, double y, int pos)
   return res;
 }
 
-double laplace(double *a, int n, double x, double y) 
+double laplace(double *a, double x, double y) 
 {
   double res = 0.0;
-  for (int i = 0; i < n; i++) 
+  for (int i = 0; i < NEURONS; i++) 
   {
     double mqs = MQ_sample(&a[4 * i], x, y);
     double dx = x - a[4 * i + 2];
@@ -74,10 +74,10 @@ double laplace(double *a, int n, double x, double y)
   return res;
 }
 
-double calc(double *a, int n, double x, double y) 
+double calc(double *a, double x, double y) 
 {
   double res = 0.0;
-  for (int i = 0; i < n; ++i) 
+  for (int i = 0; i < NEURONS; ++i) 
   {
     res += calc_neuron(&a[i * 4], x, y);
   }
@@ -119,31 +119,25 @@ double J(double *a)
   double res = 0.0;
   for (int i = 0; i < POINTS_INNER; i++) 
   {
-    double tmp = laplace(a, NEURONS, test_points[i][0], test_points[i][1]) \
-      - f(test_points[i][0], test_points[i][1]);
+    double U = calc(a, test_points[i][0], test_points[i][1]);
+    double dUx = derivative(a, test_points[i][0], test_points[i][1], 1);
+    double dUy = derivative(a, test_points[i][0], test_points[i][1], 2);
+    double tmp = laplace(a, test_points[i][0], test_points[i][1]) \
+      - f(test_points[i][0], test_points[i][1], U, dUx, dUy);
     res += sqr(tmp);
   }
   for (int i = POINTS_INNER; i < ALL_POINTS; i++) 
   {
-   // double tmp =  calc(a, NEURONS, test_points[i][0], test_points[i][1]) - \
-   //   borders_func(test_points[i][0], test_points[i][1]);
     double tmp;
-    if (test_points[i][0] == left_x)  
-      tmp =  border_derivatives[0] ? derivative(a, NEURONS, test_points[i][0], test_points[i][1], 1) - \
-        borders_func(test_points[i][0], test_points[i][1]) : calc(a, NEURONS, test_points[i][0], test_points[i][1]) - \
-        borders_func(test_points[i][0], test_points[i][1]);
-    if (test_points[i][0] == right_x)  
-      tmp =  border_derivatives[1] ? derivative(a, NEURONS, test_points[i][0], test_points[i][1], 1) - \
-        borders_func(test_points[i][0], test_points[i][1]) : calc(a, NEURONS, test_points[i][0], test_points[i][1]) - \
-        borders_func(test_points[i][0], test_points[i][1]);
-    if (test_points[i][1] == bottom_y)  
-      tmp =  border_derivatives[2] ? derivative(a, NEURONS, test_points[i][0], test_points[i][1], 2) - \
-        borders_func(test_points[i][0], test_points[i][1]) : calc(a, NEURONS, test_points[i][0], test_points[i][1]) - \
-        borders_func(test_points[i][0], test_points[i][1]);
+    if (test_points[i][0] == left_x) 
+      tmp = left_derivative_factor * derivative(a, test_points[i][0], test_points[i][1], 1) + left_value_factor * calc(a, test_points[i][0], test_points[i][1]);
+    if (test_points[i][0] == right_x)
+      tmp = right_derivative_factor * derivative(a, test_points[i][0], test_points[i][1], 1) + right_value_factor * calc(a, test_points[i][0], test_points[i][1]);
+    if (test_points[i][1] == bottom_y)
+      tmp = bottom_derivative_factor * derivative(a, test_points[i][0], test_points[i][1], 2) + bottom_value_factor * calc(a, test_points[i][0], test_points[i][1]);
     if (test_points[i][1] == top_y)  
-      tmp =  border_derivatives[3] ? derivative(a, NEURONS, test_points[i][0], test_points[i][1], 2) - \
-        borders_func(test_points[i][0], test_points[i][1]) : calc(a, NEURONS, test_points[i][0], test_points[i][1]) - \
-        borders_func(test_points[i][0], test_points[i][1]);
+      tmp = top_derivative_factor * derivative(a, test_points[i][0], test_points[i][1], 2) + top_value_factor * calc(a, test_points[i][0], test_points[i][1]);
+    tmp -= borders_func(test_points[i][0], test_points[i][1]);
     res += DELTA * sqr(tmp);
   }
   return res;
@@ -304,16 +298,20 @@ int main()
   generate_box_points();
   generate_test_points();
   int p = box_method();
-  double E = 0.0;
+  double E1 = 0.0;
+  double E2 = 0.0;
+  double EM = 0.0;
   for (double x = left_x; x <= right_x + 0.00001; x += 0.005)
   {
     for (double y = bottom_y; y <= top_y + 0.00001; y += 0.005)
     {
-        double tmp = calc(&box_points[p][0], NEURONS, x, y) - solution(x, y);
-        E += sqr(tmp);
+      double tmp = fabs(calc(&box_points[p][0], x, y) - solution(x, y));
+      E1 += tmp;
+      E2 += sqr(tmp);
+      EM = (EM > tmp)?EM:tmp;
     }
   }
-  std::cout << "Problem 1\t" << NEURONS << "\t" << POINTS_INNER << "\t" << POINTS_BORDER << "\t" << DELTA << "\t" << cached_values[p] << "\t" << E << std::endl;  
+  std::cout << "Problem N\t" << NEURONS << "\t" << POINTS_INNER << "\t" << POINTS_BORDER << "\t" << DELTA << "\t" << cached_values[p] << "\t" << E1 << "\t" << E2 << "\t" << EM << std::endl;  
 /*  std::cout << "RBF-MQ" << std::endl;
   for (int i=0; i < NEURONS; ++i) 
   {
