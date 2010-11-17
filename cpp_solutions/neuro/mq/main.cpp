@@ -22,11 +22,11 @@ const double DELTA = 50;
 const double W_MIN = -100;
 const double W_MAX = 100;
 const double A_MIN = 0.0;
-const double A_MAX = 3.0;
-const double C_X_MIN = -0.5;
-const double C_X_MAX = 1.5;
-const double C_Y_MIN = -0.5;
-const double C_Y_MAX = 1.5;
+const double A_MAX = right_x + top_y - left_x - bottom_y; 
+const double C_X_MIN = left_x - 0.5;
+const double C_X_MAX = right_x + 0.5;
+const double C_Y_MIN = bottom_y - 0.5;
+const double C_Y_MAX = top_y + 0.5;
 
 double box_points[2 * NEURONS * 4][4 * NEURONS];
 double test_points[ALL_POINTS][2];
