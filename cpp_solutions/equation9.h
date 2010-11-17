@@ -23,7 +23,7 @@ double solution(double x, double y)
 }
 
 double borders_func(double x, double y)
-{n
+{
     if (x == left_x) return exp(-y) * cos(y);
   if (x == right_x) return 0;
   if (y == bottom_y) return cos(x);
