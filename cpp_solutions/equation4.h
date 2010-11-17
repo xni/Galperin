@@ -25,7 +25,7 @@ double solution(double x, double y)
 double borders_func(double x, double y)
 {
   if (x == left_x) return exp(y);
-  if (x == right_x) return -1.0 * exp(y);
+  if (x == right_x) return 0;
   if (y == bottom_y) return sin(x);
   if (y == top_y) return exp(1.0) * sin(x);
 }
