@@ -18,6 +18,7 @@ const int POINTS_BORDER = 50; // точек на каждой границе
 const int ALL_POINTS = POINTS_INNER + 4 * POINTS_BORDER;
 
 const double DELTA = 50;
+const double ACCURACY = 1e-9;
 
 const double W_MIN = -100;
 const double W_MAX = 100;
@@ -126,18 +127,36 @@ double J(double *a)
       - f(test_points[i][0], test_points[i][1], U, dUx, dUy);
     res += sqr(tmp);
   }
-  for (int i = POINTS_INNER; i < ALL_POINTS; i++) 
+  for (int i = POINTS_INNER; i < POINTS_INNER + POINTS_BORDER; i++) 
   {
     double tmp;
-    if (test_points[i][0] == left_x) 
-      tmp = left_derivative_factor * derivative(a, test_points[i][0], test_points[i][1], 1) + left_value_factor * calc(a, test_points[i][0], test_points[i][1]);
-    if (test_points[i][0] == right_x)
-      tmp = right_derivative_factor * derivative(a, test_points[i][0], test_points[i][1], 1) + right_value_factor * calc(a, test_points[i][0], test_points[i][1]);
-    if (test_points[i][1] == bottom_y)
-      tmp = bottom_derivative_factor * derivative(a, test_points[i][0], test_points[i][1], 2) + bottom_value_factor * calc(a, test_points[i][0], test_points[i][1]);
-    if (test_points[i][1] == top_y)  
-      tmp = top_derivative_factor * derivative(a, test_points[i][0], test_points[i][1], 2) + top_value_factor * calc(a, test_points[i][0], test_points[i][1]);
-    tmp -= borders_func(test_points[i][0], test_points[i][1]);
+    double x = test_points[i][0];
+    double y = test_points[i][1];
+    tmp = left_derivative_factor * derivative(a, x, y, 1) + left_value_factor * calc(a, x, y) - left_border(y);
+    res += DELTA * sqr(tmp);
+  }
+  for (int i = POINTS_INNER + POINTS_BORDER; i < POINTS_INNER + 2 * POINTS_BORDER; i++) 
+  {
+    double tmp;
+    double x = test_points[i][0];
+    double y = test_points[i][1];
+    tmp = right_derivative_factor * derivative(a, x, y, 1) + right_value_factor * calc(a, x, y) - right_border(y);
+    res += DELTA * sqr(tmp);
+  }
+  for (int i = POINTS_INNER + 2 * POINTS_BORDER; i < POINTS_INNER + 3 * POINTS_BORDER; i++) 
+  {
+    double tmp;
+    double x = test_points[i][0];
+    double y = test_points[i][1];
+    tmp = bottom_derivative_factor * derivative(a, x, y, 2) + bottom_value_factor * calc(a, x, y) - bottom_border(x);
+    res += DELTA * sqr(tmp);
+  }
+  for (int i = POINTS_INNER + 3 * POINTS_BORDER; i < POINTS_INNER + 4 * POINTS_BORDER; i++) 
+  {
+    double tmp;
+    double x = test_points[i][0];
+    double y = test_points[i][1];
+    tmp = top_derivative_factor * derivative(a, x, y, 2) + top_value_factor * calc(a, x, y) - top_border(x);
     res += DELTA * sqr(tmp);
   }
   return res;
@@ -154,6 +173,12 @@ void generate_box_points()
       box_points[c][4 * i + 2] = C_X_MIN + (C_X_MAX - C_X_MIN) * double(rand()) / RAND_MAX;
       box_points[c][4 * i + 3] = C_Y_MIN + (C_Y_MAX - C_Y_MIN) * double(rand()) / RAND_MAX;
     }
+  }
+}
+
+void fill_cache() {
+  for (int i = 0; i < 2 * NEURONS * 4; i++) {
+    cached_values[i] = J(&box_points[i][0]);
   }
 }
 
@@ -198,7 +223,7 @@ int box_method()
       {
         sum += sqr(tmp - cached_values[i]);
       }
-      if (sqrt(sum) < 1e-7) 
+      if (sqrt(sum) < ACCURACY) 
       {
         // Finding the best point
         int min_index = 0;
@@ -297,6 +322,7 @@ int main()
   srand(time(0));
   generate_box_points();
   generate_test_points();
+  fill_cache();
   int p = box_method();
   double E1 = 0.0;
   double E2 = 0.0;
