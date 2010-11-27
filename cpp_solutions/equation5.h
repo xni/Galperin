@@ -22,13 +22,18 @@ double solution(double x, double y)
   return x * cos(y);
 }
 
-double borders_func(double x, double y)
-{
-  if (x == left_x) return cos(y);
-  if (x == right_x) return 0;
-  if (y == bottom_y) return x;
-  if (y == top_y) return 0;
-}
+double left_border(double y) {
+  return cos(y); }
+
+double right_border(double y) {
+  return 0; }
+
+double bottom_border(double x) {
+  return x; }
+
+double top_border(double x) {
+  return 0; }
+
 
 double f(double x, double y, double U, double dUx, double dUy)
 {

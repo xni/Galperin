@@ -12,13 +12,19 @@ double solution(double x, double y)
    return exp(x) * cos(y);
 }
 
-double borders_func(double x, double y)
-{
-  if (x == left_x) return cos(y);
-  if (x == right_x) return exp(1.0) * cos(y);
-  if (y == bottom_y) return 0;
-  if (y == top_y) return -1.0 * exp(x);
-}
+
+ouble left_border(double y) {
+  return cos(y); }
+
+double right_border(double y) {
+  return exp(1.0) * cos(y); }
+
+double top_border(double x) {
+  return -1.0 * exp(x); }
+
+double bottom_border(double x) {
+  return 0.0; }
+
 
 double f(double x, double y)
 {

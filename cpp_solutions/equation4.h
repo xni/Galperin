@@ -22,13 +22,19 @@ double solution(double x, double y)
   return exp(y) * sin(x);
 }
 
-double borders_func(double x, double y)
-{
-  if (x == left_x) return exp(y);
-  if (x == right_x) return 0;
-  if (y == bottom_y) return sin(x);
-  if (y == top_y) return exp(1.0) * sin(x);
-}
+
+double left_border(double y) {
+  return exp(y); }
+
+double right_border(double y) {
+  return 0; }
+
+double bottom_border(double x) {
+  return sin(x); }
+
+double top_border(double x) {
+  return exp(1.0) * sin(x); }
+
 
 double f(double x, double y, double U, double dUx, double dUy)
 {

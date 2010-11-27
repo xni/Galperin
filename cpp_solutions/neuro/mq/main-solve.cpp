@@ -4,7 +4,7 @@
 #include <ctime>
 #include <iomanip>
 #include <fstream>
-#include "../../equation.h"
+#include "../../equation10.h"
 
 #define sqr(a) ((a)*(a))
 
@@ -12,12 +12,12 @@
   RBF-MQ
 */
 
-const int NEURONS = 50;
+const int NEURONS = 20;
 const int POINTS_INNER = 200;
 const int POINTS_BORDER = 50; // точек на каждой границе
 const int ALL_POINTS = POINTS_INNER + 4 * POINTS_BORDER;
 
-const double DELTA = 50;
+const double DELTA = 100;
 const double ACCURACY = 1e-9;
 
 const double W_MIN = -100;
@@ -151,7 +151,7 @@ double J(double *a)
     tmp = bottom_derivative_factor * derivative(a, x, y, 2) + bottom_value_factor * calc(a, x, y) - bottom_border(x);
     res += DELTA * sqr(tmp);
   }
-  for (int i = POINTS_INNER + 3 * POINTS_BORDER; i < POINTS_INNER + 4 * POINTS_BORDER; i++) 
+  for (int i = POINTS_INNER + 3 * POINTS_BORDER; i < POINTS_INNER + 4 * POINTS_BORDER; i++)
   {
     double tmp;
     double x = test_points[i][0];
@@ -239,7 +239,7 @@ int box_method()
         }
       return min_index;
       }
-      //std::cerr << "Max error = " << max_error << std::endl;
+      std::cerr << "Max error = " << max_error << std::endl;
     }
     
     // Box method
@@ -324,7 +324,7 @@ int main()
   generate_test_points();
   fill_cache();
   int p = box_method();
-  double E1 = 0.0;
+  /*  double E1 = 0.0;
   double E2 = 0.0;
   double EM = 0.0;
   for (double x = left_x; x <= right_x + 0.00001; x += 0.005)
@@ -336,14 +336,14 @@ int main()
       E2 += sqr(tmp);
       EM = (EM > tmp)?EM:tmp;
     }
-  }
-  std::cout << "Problem N\t" << NEURONS << "\t" << POINTS_INNER << "\t" << POINTS_BORDER << "\t" << DELTA << "\t" << cached_values[p] << "\t" << E1 << "\t" << E2 << "\t" << EM << std::endl;  
-/*  std::cout << "RBF-MQ" << std::endl;
+    }*/
+  //  std::cout << "Problem N\t" << NEURONS << "\t" << POINTS_INNER << "\t" << POINTS_BORDER << "\t" << DELTA << "\t" << cached_values[p] << "\t" << E1 << "\t" << E2 << "\t" << EM << std::endl;  
+  std::cout << "RBF-MQ" << std::endl;
   for (int i=0; i < NEURONS; ++i) 
   {
     std::cout << box_points[p][i * 4] << " " << box_points[p][i * 4 + 1] << " " \
         << box_points[p][i * 4 + 2] << " " << box_points[p][i * 4 + 3];
     std::cout << std::endl;
-  }*/
+  }
   return 0;
 }

@@ -22,13 +22,19 @@ double solution(double x, double y)
   return x * x - y * y;
 }
 
-double borders_func(double x, double y)
-{
-  if (x == left_x) return 0;
-  if (x == right_x) return 1 - y * y;
-  if (y == bottom_y) return 0;
-  if (y == top_y) return x * x - 1;
-}
+
+double left_border(double y) {
+  return 0; }
+
+double right_border(double y) {
+  return 1.0 - y * y; }
+
+double top_border(double x) {
+  return x * x - 1; }
+
+double bottom_border(double x) {
+  return 0; }
+
 
 double f(double x, double y, double U, double dUx, double dUy)
 {
