@@ -17,6 +17,12 @@ const double bottom_value_factor = 0;
 const double top_derivative_factor = 1;
 const double top_value_factor = -1;
 
+const bool use_sf_left = true;
+const bool use_sf_right = false;
+const bool use_sf_bottom = true;
+const bool use_sf_top = true;
+
+
 double solution(double x, double y)
 {
   return y * sin(x);
@@ -34,6 +40,7 @@ double bottom_border(double x) {
 
 double top_border(double x) {
   return 0; }
+
 
 
 double f(double x, double y, double U, double dUx, double dUy)

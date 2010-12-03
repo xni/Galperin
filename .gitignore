@@ -11,3 +11,5 @@ reports/*
 *result
 *result.txt
 *main
+build/
+*#*#

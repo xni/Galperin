@@ -17,11 +17,16 @@ const double bottom_value_factor = 1;
 const double top_derivative_factor = 0;
 const double top_value_factor = 1;
 
+const bool use_sf_left = true;
+const bool use_sf_right = true;
+const bool use_sf_bottom = true;
+const bool use_sf_top = false;
+
+
 double solution(double x, double y)
 {
    return x + y;
 }
-
 
 double left_border(double y) {
   return y; }
