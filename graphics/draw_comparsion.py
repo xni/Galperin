@@ -129,17 +129,21 @@ class Exact(object):
     def __init__(self):
         pass
 
-    #def get_value(self, x, y):
-    #    return x*x - y*y
-
     def get_value(self, x, y):
-        return -1.0 * math.sin(math.pi * x) * math.sin(math.pi * y) / (
-            2.0 * math.pi * math.pi)
-
+        #return x*x - y*y #Problem1
+        #return x*x - y*y + 0.5 #Problem2
+        return x*x - y*y - 1 #Problem3
+        #return x*x - y*y + ((math.sqrt(2.0) - 1.0) / 2.0) * ((math.sqrt(2.0) - 1.0) / 2.0)
 
 def draw_two_value_maps(interpreter1, interpreter2):
-    x = arange(0.0, 1.00001, 0.025)
-    y = arange(0.0, 1.00001, 0.025)
+    #x = arange(0.5, sqrt(2.0)/2.0, 0.025) #Problem1
+    #y = arange(0.0, 0.50001, 0.025)
+    #x = arange(0.0, 0.50001, 0.025) #Problem2
+    #y = arange(0.5, sqrt(2.0)/2.0, 0.025)
+    x = arange(1.0, (1.0 + math.sqrt(2.0))/2.0, 0.025) #Problem3
+    y = arange(0.0, 0.5, 0.025)
+    #x = arange(0.0, 0.50001, 0.025) #Problem4
+    #y = arange(0.0, ((math.sqrt(2.0) - 1.0) / 2.0), 0.025)
     X, Y = meshgrid(x, y)
     
     interpreter3 = Exact()
@@ -200,7 +204,10 @@ def draw_diff_map(interpreter1, interpreter2):
 
 def get_x_section(interpreter1, interpreter2):
     x = float(raw_input("Input x=const: ").strip())
-    y = arange(0.0, 1.0001, 0.025)
+    #y = arange(0.0, math.sqrt(0.5 - x*x), 0.025) #Problem1
+    #y = arange(0.5, math.sqrt(0.5 - x*x), 0.025) #Problem2
+    y = arange(0.0, math.sqrt( (x*x - 0.5) / (2.0 * math.sqrt(2.0) - 1.0) ), 0.025) #Problem3
+    #y = arange(0.0, ((math.sqrt(2.0) - 1.0) / 2.0)*math.sqrt(1.0 - 2.0 * x), 0.025) #Problem4
     interpreter3 = Exact()
     i1 = [interpreter1.get_value(x, y_i) for y_i in y]
     i2 = [interpreter2.get_value(x, y_i) for y_i in y]
@@ -218,7 +225,10 @@ def get_x_section(interpreter1, interpreter2):
 
 def get_y_section(interpreter1, interpreter2):
     y = float(raw_input("Input y=const: ").strip())
-    x = arange(0.0, 1.0001, 0.025)
+    #x = arange(0.5, math.sqrt(0.5 - y*y), 0.025) #Problem1
+    #x = arange(0.0, math.sqrt(0.5 - y*y), 0.025) #Problem2
+    x = arange(math.sqrt(0.5 + y*y*(2.0*math.sqrt(2.0) - 1.0)), (math.sqrt(2.0) + 1.0)/2.0, 0.025) #Problem3
+    #x = arange(0.0, (1.0 - y*y/((math.sqrt(2.0) - 1.0) / 2.0))/2.0, 0.025) #Problem4
     interpreter3 = Exact()
     i1 = [interpreter1.get_value(x_i, y) for x_i in x]
     i2 = [interpreter2.get_value(x_i, y) for x_i in x]
