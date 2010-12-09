@@ -4,7 +4,8 @@
 #include <ctime>
 #include <iomanip>
 #include <fstream>
-#include "../../equation10.h"
+#include "../../normal_distribution.h"
+#include "../../equationN1.h"
 
 #define sqr(a) ((a)*(a))
 
@@ -13,13 +14,13 @@
 */
 
 const int NEURONS = 25;
-const int POINTS_INNER = 200;
-const int POINTS_BORDER = 50; // точек на каждой границе
-const int SF_INNER_POINTS = 10; // в промежуточном решении
+const int POINTS_INNER = 100;
+const int POINTS_BORDER = 100; // точек на каждой границе
+const int SF_INNER_POINTS = 50; // в промежуточном решении
 const int ALL_POINTS = POINTS_INNER + 4 * POINTS_BORDER;
 
-const double DELTA = 100;
-const double DELTA2 = 150;
+const double DELTA = 1000;
+const double DELTA2 = 1000;
 const double ACCURACY = 1e-9;
 
 const double W_MIN = -100;
@@ -163,9 +164,11 @@ void generate_sf_inner_points()
   }
 }
 
-void generate_sf_inner_values(int p) {
+void generate_sf_inner_values(int p, double acc=0) {
   for (int i = 0; i < SF_INNER_POINTS; i++) {
-    sf_inner_values[i] = calc(&box_points[p][0], sf_inner_points[i][0], sf_inner_points[i][1]);
+    //    sf_inner_values[i] = calc(&box_points[p][0], sf_inner_points[i][0], sf_inner_points[i][1]);
+    double sol = solution(sf_inner_points[i][0], sf_inner_points[i][1]);
+    sf_inner_values[i] = distribute(sol, acc);
   }
 }
 
@@ -419,6 +422,7 @@ int box_method()
           min_index = i;
         }
       }
+      double max_error = min_error;
       for (int i = 0; i < 2 * NEURONS * 4; ++i) 
       {
         for (int j = 0; j < 4 * NEURONS; ++j) 
@@ -427,6 +431,12 @@ int box_method()
             + 0.5 * (box_points[i][j] - box_points[min_index][j]);
         }
         cached_values[i] = J(&box_points[i][0]);
+	if (max_error < cached_values[i]) {
+	  max_error = cached_values[i];
+	}
+      }
+      if (max_error - min_error < ACCURACY) {
+	return min_index;
       }
     }
   }
@@ -436,7 +446,6 @@ int main(int argc, char *argv[])
 {
   std::ofstream f1(argv[1]);
   std::ofstream f2(argv[2]);
-
   if (!use_sf_left || !use_sf_right) {
     for (double y = bottom_y; y <= top_y; y += 0.01) {
       std::cout << ((!use_sf_left) ? left_border(y) : right_border(y)) << " ";
@@ -447,9 +456,8 @@ int main(int argc, char *argv[])
     }
   }
   std::cout << std::endl;
-  
   srand(time(0));
-  is_second_phase = false;
+  /*  is_second_phase = false;
   generate_box_points();
   generate_test_points();
   fill_cache();
@@ -457,14 +465,12 @@ int main(int argc, char *argv[])
 
   if (!use_sf_left || !use_sf_right) {
     for (double y = bottom_y; y <= top_y; y += 0.01) {
-      std::cout << derivative(&box_points[p][0],
-      			      (!use_sf_left) ? left_x : right_x, y, 1) << " ";
+      std::cout << derivative(&box_points[p][0], (!use_sf_left) ? left_x : right_x, y, 1) << " ";
       //      std::cout << calc(&box_points[p][0], (!use_sf_left) ? left_x : right_x, y) << " ";
     }
   } else {
     for (double x = left_x; x <= right_x; x += 0.01) {
-      std::cout << derivative(&box_points[p][0],
-			      x, (!use_sf_top) ? top_y : bottom_y, 2) << " ";
+      std::cout << derivative(&box_points[p][0], x, (!use_sf_top) ? top_y : bottom_y, 2) << " ";
       //      std::cout << calc(&box_points[p][0], x, (!use_sf_top) ? top_y : bottom_y) << " ";
     }
   }
@@ -475,9 +481,10 @@ int main(int argc, char *argv[])
         << box_points[p][i * 4 + 2] << " " << box_points[p][i * 4 + 3];
     f1 << std::endl;
   }
-  std::cout << std::endl;
+  std::cout << std::endl; */
+  int p = 0;
   generate_sf_inner_points();
-  generate_sf_inner_values(p);
+  generate_sf_inner_values(p, 0.00);
   generate_box_points();
   generate_sf_test_points();
   is_second_phase = true;
@@ -485,18 +492,57 @@ int main(int argc, char *argv[])
   p = box_method();
   if (!use_sf_left || !use_sf_right) {
     for (double y = bottom_y; y <= top_y; y += 0.01) {
-      //      std::cout << derivative(&box_points[p][0],
-      //      			      (!use_sf_left) ? left_x : right_x, y, 1) << " ";
-      std::cout << calc(&box_points[p][0], (!use_sf_left) ? left_x : right_x, y) << " ";
+      std::cout << derivative(&box_points[p][0], (!use_sf_left) ? left_x : right_x, y, 1) << " ";
+      //std::cout << calc(&box_points[p][0], (!use_sf_left) ? left_x : right_x, y) << " ";
     }
   } else {
     for (double x = left_x; x <= right_x; x += 0.01) {
-      //      std::cout << derivative(&box_points[p][0],
-      //      			      x, (!use_sf_top) ? top_y : bottom_y, 2) << " ";
-      std::cout << calc(&box_points[p][0], x, (!use_sf_top) ? top_y : bottom_y) << " ";
+      std::cout << derivative(&box_points[p][0], x, (!use_sf_top) ? top_y : bottom_y, 2) << " ";
+      //std::cout << calc(&box_points[p][0], x, (!use_sf_top) ? top_y : bottom_y) << " ";
     }
   }
   std::cout << std::endl;
+
+  generate_sf_inner_points();
+  generate_sf_inner_values(p, 0.05);
+  generate_box_points();
+  generate_sf_test_points();
+  is_second_phase = true;
+  fill_cache();
+  p = box_method();
+  if (!use_sf_left || !use_sf_right) {
+    for (double y = bottom_y; y <= top_y; y += 0.01) {
+      std::cout << derivative(&box_points[p][0], (!use_sf_left) ? left_x : right_x, y, 1) << " ";
+      //std::cout << calc(&box_points[p][0], (!use_sf_left) ? left_x : right_x, y) << " ";
+    }
+  } else {
+    for (double x = left_x; x <= right_x; x += 0.01) {
+      std::cout << derivative(&box_points[p][0], x, (!use_sf_top) ? top_y : bottom_y, 2) << " ";
+      //std::cout << calc(&box_points[p][0], x, (!use_sf_top) ? top_y : bottom_y) << " ";
+    }
+  }
+  std::cout << std::endl;
+
+  generate_sf_inner_points();
+  generate_sf_inner_values(p, 0.15);
+  generate_box_points();
+  generate_sf_test_points();
+  is_second_phase = true;
+  fill_cache();
+  p = box_method();
+  if (!use_sf_left || !use_sf_right) {
+    for (double y = bottom_y; y <= top_y; y += 0.01) {
+      std::cout << derivative(&box_points[p][0], (!use_sf_left) ? left_x : right_x, y, 1) << " ";
+      //std::cout << calc(&box_points[p][0], (!use_sf_left) ? left_x : right_x, y) << " ";
+    }
+  } else {
+    for (double x = left_x; x <= right_x; x += 0.01) {
+      std::cout << derivative(&box_points[p][0], x, (!use_sf_top) ? top_y : bottom_y, 2) << " ";
+      //std::cout << calc(&box_points[p][0], x, (!use_sf_top) ? top_y : bottom_y) << " ";
+    }
+  }
+  std::cout << std::endl;
+
   f2 << "RBF-MQ" << std::endl;
   for (int i=0; i < NEURONS; ++i) 
   {

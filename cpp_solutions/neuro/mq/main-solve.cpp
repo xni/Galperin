@@ -4,7 +4,7 @@
 #include <ctime>
 #include <iomanip>
 #include <fstream>
-#include "../../equation10.h"
+#include "../../equationN1.h"
 
 #define sqr(a) ((a)*(a))
 
@@ -13,11 +13,11 @@
 */
 
 const int NEURONS = 20;
-const int POINTS_INNER = 200;
-const int POINTS_BORDER = 50; // точек на каждой границе
+const int POINTS_INNER = 500;
+const int POINTS_BORDER = 150; // точек на каждой границе
 const int ALL_POINTS = POINTS_INNER + 4 * POINTS_BORDER;
 
-const double DELTA = 100;
+const double DELTA = 1000;
 const double ACCURACY = 1e-9;
 
 const double W_MIN = -100;
@@ -304,6 +304,8 @@ int box_method()
           min_index = i;
         }
       }
+      double minJ = min_error;
+      double maxJ = min_error;
       for (int i = 0; i < 2 * NEURONS * 4; ++i) 
       {
         for (int j = 0; j < 4 * NEURONS; ++j) 
@@ -312,6 +314,11 @@ int box_method()
             + 0.5 * (box_points[i][j] - box_points[min_index][j]);
         }
         cached_values[i] = J(&box_points[i][0]);
+	if (minJ > cached_values[i]) minJ = cached_values[i];
+	if (maxJ < cached_values[i]) maxJ = cached_values[i];
+      }
+      if (maxJ - minJ < ACCURACY) {
+	return 0;
       }
     }
   }
