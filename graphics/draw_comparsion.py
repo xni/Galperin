@@ -132,18 +132,25 @@ class Exact(object):
     def get_value(self, x, y):
         #return x*x - y*y #Problem1
         #return x*x - y*y + 0.5 #Problem2
-        return x*x - y*y - 1 #Problem3
+        #return x*x - y*y - 1 #Problem3
         #return x*x - y*y + ((math.sqrt(2.0) - 1.0) / 2.0) * ((math.sqrt(2.0) - 1.0) / 2.0)
+        #return x*x + y*y #Round problem
+        return x*x - y*y + 2*x*y - 3.0 #Circle problem
 
 def draw_two_value_maps(interpreter1, interpreter2):
     #x = arange(0.5, sqrt(2.0)/2.0, 0.025) #Problem1
     #y = arange(0.0, 0.50001, 0.025)
     #x = arange(0.0, 0.50001, 0.025) #Problem2
     #y = arange(0.5, sqrt(2.0)/2.0, 0.025)
-    x = arange(1.0, (1.0 + math.sqrt(2.0))/2.0, 0.025) #Problem3
-    y = arange(0.0, 0.5, 0.025)
+    #x = arange(1.0, (1.0 + math.sqrt(2.0))/2.0, 0.025) #Problem3
+    #y = arange(0.0, 0.5, 0.025)
     #x = arange(0.0, 0.50001, 0.025) #Problem4
     #y = arange(0.0, ((math.sqrt(2.0) - 1.0) / 2.0), 0.025)
+    #x = arange(-1.0, 1.00001, 0.025) #Round problem
+    #y = arange(-1.0, 1.00001, 0.025)
+    x = arange(-2.0, 2.00001, 0.025) #Circle problem
+    y = arange(-2.0, 2.00001, 0.025)
+
     X, Y = meshgrid(x, y)
     
     interpreter3 = Exact()
@@ -206,8 +213,17 @@ def get_x_section(interpreter1, interpreter2):
     x = float(raw_input("Input x=const: ").strip())
     #y = arange(0.0, math.sqrt(0.5 - x*x), 0.025) #Problem1
     #y = arange(0.5, math.sqrt(0.5 - x*x), 0.025) #Problem2
-    y = arange(0.0, math.sqrt( (x*x - 0.5) / (2.0 * math.sqrt(2.0) - 1.0) ), 0.025) #Problem3
+    #y = arange(0.0, math.sqrt( (x*x - 0.5) / (2.0 * math.sqrt(2.0) - 1.0) ), 0.025) #Problem3
     #y = arange(0.0, ((math.sqrt(2.0) - 1.0) / 2.0)*math.sqrt(1.0 - 2.0 * x), 0.025) #Problem4
+    #y = arange(-1.0 * math.sqrt(1 - x*x), math.sqrt(1 - x*x), 0.025) #Round problem
+    if math.fabs(x) > 1.0: #Circle problem
+      y = arange(-1.0 * math.sqrt(4.0 - x*x), math.sqrt(4.0 - x*x), 0.025)
+    else:
+      qqq = raw_input()
+      if qqq == "u":
+        y = arange(math.sqrt(1.0 - x*x), math.sqrt(4.0 - x*x), 0.025)
+      elif qqq == "d":
+        y = arange(-1.0 * math.sqrt(4.0 - x*x), -1.0 * math.sqrt(1.0 - x*x), 0.025)
     interpreter3 = Exact()
     i1 = [interpreter1.get_value(x, y_i) for y_i in y]
     i2 = [interpreter2.get_value(x, y_i) for y_i in y]
@@ -227,8 +243,17 @@ def get_y_section(interpreter1, interpreter2):
     y = float(raw_input("Input y=const: ").strip())
     #x = arange(0.5, math.sqrt(0.5 - y*y), 0.025) #Problem1
     #x = arange(0.0, math.sqrt(0.5 - y*y), 0.025) #Problem2
-    x = arange(math.sqrt(0.5 + y*y*(2.0*math.sqrt(2.0) - 1.0)), (math.sqrt(2.0) + 1.0)/2.0, 0.025) #Problem3
+    #x = arange(math.sqrt(0.5 + y*y*(2.0*math.sqrt(2.0) - 1.0)), (math.sqrt(2.0) + 1.0)/2.0, 0.025) #Problem3
     #x = arange(0.0, (1.0 - y*y/((math.sqrt(2.0) - 1.0) / 2.0))/2.0, 0.025) #Problem4
+    #x = arange(-1.0 * math.sqrt(1 - y*y), math.sqrt(1 - y*y), 0.025) #Round problem
+    if math.fabs(y) > 1.0: #Circle problem
+      x = arange(-1.0 * math.sqrt(4.0 - y*y), math.sqrt(4.0 - y*y), 0.025)
+    else:
+      qqq = raw_input()
+      if qqq == "r":
+        x = arange(math.sqrt(1.0 - y*y), math.sqrt(4.0 - y*y), 0.025)
+      elif qqq == "l":
+        x = arange(-1.0 * math.sqrt(4.0 - y*y), -1.0 * math.sqrt(1.0 - y*y), 0.025)    
     interpreter3 = Exact()
     i1 = [interpreter1.get_value(x_i, y) for x_i in x]
     i2 = [interpreter2.get_value(x_i, y) for x_i in x]
