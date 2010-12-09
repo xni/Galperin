@@ -12,13 +12,13 @@
   RBF-INDIRECT-MQ
 */
 
-const int NEURONS = 10;
+const int NEURONS = 40;
 const int P = 5;                // Для апроксимации функций Ci
-const int POINTS_INNER = 200;
-const int POINTS_BORDER = 50; // точек на каждой границе
+const int POINTS_INNER = 400;
+const int POINTS_BORDER = 150; // точек на каждой границе
 const int ALL_POINTS = POINTS_INNER + 4 * POINTS_BORDER;
 
-const double DELTA = 1000;
+const double DELTA = 1;
 
 const double W_MIN = -100;
 const double W_MAX = 100;
@@ -77,11 +77,11 @@ double calc_U1(double *a, double x, double y)
   }
   for (int i = 2 * NEURONS; i < 2 * NEURONS + P; ++i)
   {
-      res += x * calc_neuron(&a[4 * i], x, y);
+      res += x * calc_neuron(&a[4 * i], a[4 * i + 2], y);
   }
   for (int i = 2 * NEURONS + P; i < 2 * NEURONS + 2 * P; ++i)
   {
-      res += calc_neuron(&a[4 * i], x, y);
+      res += calc_neuron(&a[4 * i], a[4 * i + 2], y);
   }
   return res;
 }
@@ -99,11 +99,11 @@ double calc_U2(double *a, double x, double y)
   }
   for (int i = 2 * NEURONS + 2 * P; i < 2 * NEURONS + 3 * P; ++i)
   {
-      res += y * calc_neuron(&a[4 * i], x, y);
+      res += y * calc_neuron(&a[4 * i], x, a[4 * i + 3]);
   }
   for (int i = 2 * NEURONS + 3 * P; i < 2 * NEURONS + 4 * P; ++i)
   {
-      res += calc_neuron(&a[4 * i], x, y);
+      res += calc_neuron(&a[4 * i], x, a[4 * i + 3]);
   }
   return res;
 }
@@ -148,7 +148,7 @@ double J(double *a)
     double tmp = calc_Uxx(a, x, y) + calc_Uyy(a, x, y) - f(x, y);
     res += sqr(tmp);
     tmp = calc_U1(a, x, y) - calc_U2(a, x, y);
-    res += 10*sqr(tmp);
+    res += sqr(tmp);
   }
   for (int i = POINTS_INNER; i < ALL_POINTS; i++) 
   {
@@ -329,6 +329,6 @@ int main()
       std::cerr << calc_U1(&box_points[p][0], i, j) << " ";
     }
     std::cerr << std::endl;
-  }
+}
   return 0;
 }
