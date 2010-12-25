@@ -97,36 +97,37 @@ double Optimizer::max_difference() {
 }
 
 
+vector<double> Optimizer::reflect(vector<double> gravity_center_cache, int worst_point, double current_scale) {
+  vector<double> new_point;
+  for (int j = 0; j < _points[0].size(); ++j) {
+    new_point.push_back(gravity_center_cache[j] + current_scale * (gravity_center_cache[j] - _points[worst_point][j]));
+    int type = j % (2 + _restrictions.dimensions());
+    if (type == 0) {
+      new_point[j] = _restrictions.acceptable_w(new_point[j]);
+    }
+    else if (type == 1) {
+      new_point[j] = _restrictions.acceptable_a(new_point[j]);
+    }
+    else {
+      new_point[j] = _restrictions.acceptable_c(new_point[j], type - 2);
+    }
+  }
+  return new_point;
+}
+
+
 bool Optimizer::update_point() {
-  vector<double> new_point(_points[0].size());    
   double current_scale = FIRST_SCALE;
     
   vector<double> cache_gravity_center = gravity_center();
   int worst_point = worst_point_index();
   
   for (int i = 0; i < REPEAT_DIVIDING; ++i) {
-    for (int j = 0; j < _points[0].size(); ++j) {
-      new_point[j] = cache_gravity_center[j] + current_scale * (cache_gravity_center[j] - _points[worst_point][j]);
-      int type = j % (2 + _restrictions.dimensions());
-      if (type == 0) {
-	new_point[j] = _restrictions.acceptable_w(new_point[j]);
-      }
-      else if (type == 1) {
-	new_point[j] = _restrictions.acceptable_a(new_point[j]);
-      }
-      else {
-	new_point[j] = _restrictions.acceptable_c(new_point[j], type - 2);
-      }
-    }
-    
+    vector<double> new_point = reflect(cache_gravity_center, worst_point, current_scale);
     if ((*_J)(new_point) > _cached_values[worst_point]) {
       current_scale /= 2.0;
-    }
-    else {
-      std::cout << "REPLACE\n";
-      for (int i = 0; i < _points[0].size(); i++) {
-	_points[worst_point][i] = new_point[i];
-      }
+    } else {
+      _points[worst_point] = new_point;
       _cached_values[worst_point] = (*_J)(_points[worst_point]);
       return true;
     }
@@ -151,16 +152,10 @@ void Optimizer::reduction() {
 
 
 vector<double> Optimizer::optimize() {
-  int iteration = 0;
   while (true) {
-    ++iteration;
-
-    std::cout << max_difference() << std::endl;
-
-    if (iteration % 100 == 0 && max_difference() < _accuracy) {
+    if (max_difference() < _accuracy) {
       return _points[best_point_index()];
     }
-
     if (!update_point()) {
       reduction();
     }
