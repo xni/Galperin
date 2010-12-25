@@ -12,7 +12,7 @@
   RBF-MQ
 */
 
-const int NEURONS = 20;
+const int NEURONS = 5;
 const int POINTS_INNER = 200;
 const int POINTS_BORDER = 50; // точек на каждой границе
 const int ALL_POINTS = POINTS_INNER + 4 * POINTS_BORDER;
@@ -330,14 +330,14 @@ int main()
   generate_box_points();
   generate_test_points();
   fill_cache();
-  int p = box_method();
+  int p = 3; //box_method();
   double* best_solution = &box_points[p][0];
-  double best_w = best_solution[0];
-  double best_a = best_solution[1];
-  for (double w = best_w - 0.5; w <= best_w + 0.5; w += 0.01) {
-    for (double a = best_a - 0.5; a <= best_a + 0.5; a += 0.01) {
-      best_solution[0] = w;
-      best_solution[1] = a;
+  double best_w1 = best_solution[0];
+  double best_w2 = best_solution[1];
+  for (double w = -3; w <= 3; w += 0.05) {
+    for (double a = -3; a <= 3; a += 0.05) {
+      best_solution[2] = w;
+      best_solution[3] = a;
       std::cout << w << '\t' << a << '\t' << J(best_solution) << std::endl;
     }
   }

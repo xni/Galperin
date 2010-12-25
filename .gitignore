@@ -13,3 +13,4 @@ reports/*
 *main
 build/
 *#*#
+*.o

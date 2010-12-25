@@ -5,7 +5,7 @@
 #include <iomanip>
 #include <fstream>
 #include "../../normal_distribution.h"
-#include "../../equationN1.h"
+#include "../../equationR1.h"
 
 #define sqr(a) ((a)*(a))
 
@@ -13,24 +13,25 @@
   RBF-MQ
 */
 
-const int NEURONS = 25;
-const int POINTS_INNER = 100;
-const int POINTS_BORDER = 100; // точек на каждой границе
-const int SF_INNER_POINTS = 50; // в промежуточном решении
+const int NEURONS = 50;
+const int POINTS_INNER = 300;
+const int POINTS_BORDER = 300; // точек на каждой границе
+const int SF_INNER_POINTS = 30; // в промежуточном решении
 const int ALL_POINTS = POINTS_INNER + 4 * POINTS_BORDER;
+const int BORDER_SD_POINTS = 40;
 
 const double DELTA = 1000;
-const double DELTA2 = 1000;
-const double ACCURACY = 1e-9;
+const double DELTA2 = 3000000;
+const double ACCURACY = 0.5; //1e-9;
 
-const double W_MIN = -100;
-const double W_MAX = 100;
-const double A_MIN = 0.0;
+const double W_MIN = -3000;
+const double W_MAX = 3000;
+const double A_MIN = 2.0;
 const double A_MAX = right_x + top_y - left_x - bottom_y; 
-const double C_X_MIN = left_x - 0.5;
-const double C_X_MAX = right_x + 0.5;
-const double C_Y_MIN = bottom_y - 0.5;
-const double C_Y_MAX = top_y + 0.5;
+const double C_X_MIN = left_x - 2;
+const double C_X_MAX = right_x + 2;
+const double C_Y_MIN = bottom_y - 1;
+const double C_Y_MAX = top_y + 1;
 
 double box_points[2 * NEURONS * 4][4 * NEURONS];
 double test_points[ALL_POINTS][2];
@@ -95,10 +96,30 @@ double calc(double *a, double x, double y)
 void generate_test_points() 
 {
   int i = 0;
-  for (int j = 0; j < POINTS_INNER; i++,j++) 
+  for (int j = 0; j < POINTS_INNER - 4 * BORDER_SD_POINTS; i++,j++) 
   {
     test_points[i][0] = left_x + (right_x - left_x) * double(rand()) / RAND_MAX;
     test_points[i][1] = bottom_y + (top_y - bottom_y) * double(rand()) / RAND_MAX;
+  }
+  for (int j = POINTS_INNER - 4 * BORDER_SD_POINTS; j < POINTS_INNER - 3 * BORDER_SD_POINTS; i++,j++) 
+  {
+    test_points[i][0] = left_x;
+    test_points[i][1] = bottom_y + (top_y - bottom_y) * double(rand()) / RAND_MAX;
+  }
+  for (int j = POINTS_INNER - 3 * BORDER_SD_POINTS; j < POINTS_INNER - 2 * BORDER_SD_POINTS; i++,j++) 
+  {
+    test_points[i][0] = right_x;
+    test_points[i][1] = bottom_y + (top_y - bottom_y) * double(rand()) / RAND_MAX;
+  }
+  for (int j = POINTS_INNER - 2 * BORDER_SD_POINTS; j < POINTS_INNER - BORDER_SD_POINTS; i++,j++) 
+  {
+    test_points[i][0] = left_x + (right_x - left_x) * double(rand()) / RAND_MAX;
+    test_points[i][1] = bottom_y;
+  }
+  for (int j = POINTS_INNER - BORDER_SD_POINTS; j < POINTS_INNER; i++,j++) 
+  {
+    test_points[i][0] = left_x + (right_x - left_x) * double(rand()) / RAND_MAX;
+    test_points[i][1] = top_y;
   }
   for (int j = 0; j < POINTS_BORDER; i++,j++) 
   {
@@ -125,10 +146,30 @@ void generate_test_points()
 void generate_sf_test_points() 
 {
   int i = 0;
-  for (int j = 0; j < POINTS_INNER + POINTS_BORDER; i++,j++) 
+  for (int j = 0; j < POINTS_INNER + POINTS_BORDER - 4 * BORDER_SD_POINTS; i++,j++) 
   {
     test_points[i][0] = left_x + (right_x - left_x) * double(rand()) / RAND_MAX;
     test_points[i][1] = bottom_y + (top_y - bottom_y) * double(rand()) / RAND_MAX;
+  }
+  for (int j = POINTS_INNER + POINTS_BORDER - 4 * BORDER_SD_POINTS; j < POINTS_INNER + POINTS_BORDER - 3 * BORDER_SD_POINTS; i++,j++) 
+  {
+    test_points[i][0] = left_x;
+    test_points[i][1] = bottom_y + (top_y - bottom_y) * double(rand()) / RAND_MAX;
+  }
+  for (int j = POINTS_INNER + POINTS_BORDER - 3 * BORDER_SD_POINTS; j < POINTS_INNER + POINTS_BORDER - 2 * BORDER_SD_POINTS; i++,j++) 
+  {
+    test_points[i][0] = right_x;
+    test_points[i][1] = bottom_y + (top_y - bottom_y) * double(rand()) / RAND_MAX;
+  }
+  for (int j = POINTS_INNER + POINTS_BORDER - 2 * BORDER_SD_POINTS; j < POINTS_INNER + POINTS_BORDER - BORDER_SD_POINTS; i++,j++) 
+  {
+    test_points[i][0] = left_x + (right_x - left_x) * double(rand()) / RAND_MAX;
+    test_points[i][1] = bottom_y;
+  }
+  for (int j = POINTS_INNER + POINTS_BORDER - BORDER_SD_POINTS; j < POINTS_INNER + POINTS_BORDER; i++,j++) 
+  {
+    test_points[i][0] = left_x + (right_x - left_x) * double(rand()) / RAND_MAX;
+    test_points[i][1] = top_y;
   }
   if (use_sf_left) {
     for (int j = 0; j < POINTS_BORDER; i++,j++) {
@@ -160,14 +201,14 @@ void generate_sf_inner_points()
 {
   for (int i = 0; i < SF_INNER_POINTS; i++) {
     sf_inner_points[i][0] = left_x + 0.2 + (right_x - left_x - 0.4) * double(rand()) / RAND_MAX;
-    sf_inner_points[i][1] = bottom_y + 0.2 + (top_y - bottom_y - 0.4) * double(rand()) / RAND_MAX;
+    sf_inner_points[i][1] = bottom_y + 0.2 + (top_y - bottom_y - 0.21) * double(rand()) / RAND_MAX;
   }
 }
 
 void generate_sf_inner_values(int p, double acc=0) {
   for (int i = 0; i < SF_INNER_POINTS; i++) {
-    //    sf_inner_values[i] = calc(&box_points[p][0], sf_inner_points[i][0], sf_inner_points[i][1]);
-    double sol = solution(sf_inner_points[i][0], sf_inner_points[i][1]);
+    double sol = calc(&box_points[p][0], sf_inner_points[i][0], sf_inner_points[i][1]);
+    //double sol = solution(sf_inner_points[i][0], sf_inner_points[i][1]);
     sf_inner_values[i] = distribute(sol, acc);
   }
 }
@@ -357,7 +398,7 @@ int box_method()
         }
       return min_index;
       }
-      //      std::cerr << "Max error = " << max_error << std::endl;
+      std::cerr << "Max error = " << max_error << std::endl;
     }
     
     // Box method
@@ -447,29 +488,29 @@ int main(int argc, char *argv[])
   std::ofstream f1(argv[1]);
   std::ofstream f2(argv[2]);
   if (!use_sf_left || !use_sf_right) {
-    for (double y = bottom_y; y <= top_y; y += 0.01) {
+    for (double y = bottom_y; y <= top_y; y += 0.1) {
       std::cout << ((!use_sf_left) ? left_border(y) : right_border(y)) << " ";
     }
   } else {
-    for (double x = left_x; x <= right_x; x += 0.01) {
+    for (double x = left_x; x <= right_x; x += 0.1) {
       std::cout << ((!use_sf_bottom) ? bottom_border(x) : top_border(x)) << " ";
     }
   }
   std::cout << std::endl;
   srand(time(0));
-  /*  is_second_phase = false;
+  is_second_phase = false;
   generate_box_points();
   generate_test_points();
   fill_cache();
   int p = box_method();
 
   if (!use_sf_left || !use_sf_right) {
-    for (double y = bottom_y; y <= top_y; y += 0.01) {
+    for (double y = bottom_y; y <= top_y; y += 0.1) {
       std::cout << derivative(&box_points[p][0], (!use_sf_left) ? left_x : right_x, y, 1) << " ";
       //      std::cout << calc(&box_points[p][0], (!use_sf_left) ? left_x : right_x, y) << " ";
     }
   } else {
-    for (double x = left_x; x <= right_x; x += 0.01) {
+    for (double x = left_x; x <= right_x; x += 0.1) {
       std::cout << derivative(&box_points[p][0], x, (!use_sf_top) ? top_y : bottom_y, 2) << " ";
       //      std::cout << calc(&box_points[p][0], x, (!use_sf_top) ? top_y : bottom_y) << " ";
     }
@@ -481,28 +522,28 @@ int main(int argc, char *argv[])
         << box_points[p][i * 4 + 2] << " " << box_points[p][i * 4 + 3];
     f1 << std::endl;
   }
-  std::cout << std::endl; */
-  int p = 0;
+  std::cout << std::endl;
+
   generate_sf_inner_points();
-  generate_sf_inner_values(p, 0.00);
+  generate_sf_inner_values(p, 0.05);
   generate_box_points();
   generate_sf_test_points();
   is_second_phase = true;
   fill_cache();
   p = box_method();
   if (!use_sf_left || !use_sf_right) {
-    for (double y = bottom_y; y <= top_y; y += 0.01) {
+    for (double y = bottom_y; y <= top_y; y += 0.1) {
       std::cout << derivative(&box_points[p][0], (!use_sf_left) ? left_x : right_x, y, 1) << " ";
       //std::cout << calc(&box_points[p][0], (!use_sf_left) ? left_x : right_x, y) << " ";
     }
   } else {
-    for (double x = left_x; x <= right_x; x += 0.01) {
+    for (double x = left_x; x <= right_x; x += 0.1) {
       std::cout << derivative(&box_points[p][0], x, (!use_sf_top) ? top_y : bottom_y, 2) << " ";
       //std::cout << calc(&box_points[p][0], x, (!use_sf_top) ? top_y : bottom_y) << " ";
     }
   }
   std::cout << std::endl;
-
+  /*
   generate_sf_inner_points();
   generate_sf_inner_values(p, 0.05);
   generate_box_points();
@@ -542,7 +583,7 @@ int main(int argc, char *argv[])
     }
   }
   std::cout << std::endl;
-
+  */
   f2 << "RBF-MQ" << std::endl;
   for (int i=0; i < NEURONS; ++i) 
   {
