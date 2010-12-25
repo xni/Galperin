@@ -1,6 +1,6 @@
 #include "approximator.h"
 
-#include "mq.h"
+#include "../MQ/MQ_1.h"
 #include <cmath>
 
 

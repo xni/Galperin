@@ -1,5 +1,5 @@
 #include <cmath>
-#include "mq.h"
+#include "MQ_1.h"
 
 
 MQ_1::MQ_1(vector<double> data) :

@@ -1,18 +1,12 @@
 #ifndef OPTIMISATION
 #define OPTIMISATION
 
-#include <functional>
 #include <vector>
 
+#include "function.h"
 #include "restrictions.h"
 
 using std::vector;
-using std::unary_function;
-
-class Function : unary_function<vector<double>, double> {
- public:
-  virtual double operator ()(vector<double>) = 0;
-};
 
 class Optimizer {
  public:

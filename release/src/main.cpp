@@ -1,6 +1,7 @@
 #include <vector>
 #include <iostream>
-#include "approximator.h"
+#include "problem_types/approximator.h"
+#include "optimisation.h"
 
 using std::vector;
 

@@ -3,8 +3,7 @@
 
 #include <vector>
 
-#include "restrictions.h"
-#include "optimisation.h"
+#include "../function.h"
 
 using std::vector;
 

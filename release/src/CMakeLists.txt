@@ -4,10 +4,16 @@ set (PROJECT ode_solve)
 project (${PROJECT})
 
 set (HEADERS
-        function.h
-	MQ/MQ_1.h)
+  function.h
+  optimisation.h
+  restrictions.h
+  problem_types/approximator.h
+  MQ/MQ_1.h)
 
 set (SOURCES
-        main.cpp)
+  optimisation.cpp
+  problem_types/approximator.cpp
+  MQ/MQ_1.cpp
+  main.cpp)
 
 add_executable (${PROJECT} ${HEADERS} ${SOURCES})
