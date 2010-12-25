@@ -4,7 +4,8 @@ set (PROJECT ode_solve)
 project (${PROJECT})
 
 set (HEADERS
-        function.h)
+        function.h
+	MQ/MQ_1.h)
 
 set (SOURCES
         main.cpp)
