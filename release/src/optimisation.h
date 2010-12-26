@@ -22,6 +22,7 @@ class Optimizer {
   void fill_cache();
   void reduction();
   vector<double> reflect(vector<double> gravity_center_cache, int worst_point, double current_scale);
+  bool is_enough();
 
   vector<double> _cached_values;
   Function* _J;

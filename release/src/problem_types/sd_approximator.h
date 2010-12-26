@@ -1,7 +1,9 @@
-/* Решение задачи апроксимации функции по заданным значениям */
+/* Решение задачи апроксимации второй производной функции.
+ * То есть решение прямой задачи.
+ */
 
-#ifndef APPROXIMATOR_H
-#define APPROXIMATOR_H
+#ifndef SD_APPROXIMATOR_H
+#define SD_APPROXIMATOR_H
 
 #include <sstream>
 #include <vector>
@@ -11,9 +13,9 @@
 using std::string;
 using std::vector;
 
-class Approximator : public Function {
+class SD_Approximator : public Function {
  public:
-  Approximator();
+  SD_Approximator();
   double operator()(vector<double> p);
   string report(vector<double> p);
 

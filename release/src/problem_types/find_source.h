@@ -1,7 +1,7 @@
-/* Решение задачи апроксимации функции по заданным значениям */
+/* Решение задачи нахождения функции источника */
 
-#ifndef APPROXIMATOR_H
-#define APPROXIMATOR_H
+#ifndef FIND_SOURCE_H
+#define FIND_SOURCE_H
 
 #include <sstream>
 #include <vector>
@@ -11,15 +11,15 @@
 using std::string;
 using std::vector;
 
-class Approximator : public Function {
+class FindSource : public Function {
  public:
-  Approximator();
+  FindSource(double sigma);
   double operator()(vector<double> p);
   string report(vector<double> p);
 
  private:
   double max_error(vector<double> p);
-  
+  double _sigma;
   vector<double> points;
   vector<double> values;
 };

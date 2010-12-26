@@ -2,12 +2,11 @@
 
 #include <cstdlib>
 #include <ctime>
+#include <cmath>
 
 
 const double Optimizer::FIRST_SCALE = 1.3;
 const int Optimizer::REPEAT_DIVIDING = 10;
-
-#include <iostream>
 
 Optimizer::Optimizer(Function* J, int neurons, double accuracy, Restrictions restrictions) :
   _J(J),
@@ -138,22 +137,29 @@ bool Optimizer::update_point() {
 
 void Optimizer::reduction() {
   int min_index = best_point_index();
-  double max_error = _cached_values[min_index];
   for (int i = 0; i < _points.size(); ++i) {
     for (int j = 0; j < _points[0].size(); ++j) {
       _points[i][j] = _points[min_index][j] + 0.5 * (_points[i][j] - _points[min_index][j]);
     }
     _cached_values[i] = (*_J)(_points[i]);
-    if (max_error < _cached_values[i]) {
-      max_error = _cached_values[i];
-    }
   }
+}
+
+
+bool Optimizer::is_enough() {
+  double sum = 0.0;
+  double tmp = (*_J)(gravity_center());
+  for (int i = 0; i < _points.size(); ++i) {
+    double d = tmp - _cached_values[i];
+    sum += d * d;
+  }
+  return sqrt(sum) < _accuracy;
 }
 
 
 vector<double> Optimizer::optimize() {
   while (true) {
-    if (max_difference() < _accuracy) {
+    if (is_enough()) {
       return _points[best_point_index()];
     }
     if (!update_point()) {

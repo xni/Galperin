@@ -32,3 +32,27 @@ double MQ_1::laplace(double x) {
   }
   return result;
 }
+
+
+string MQ_1::report_value() {
+  std::stringstream ss;
+  for (int i = 0; i < _data.size() / 3; i++) {
+    ss << "+(" << _data[i * 3] << ")*sqrt(" << _data[i * 3 + 1] << "**2 + (x-" << \
+      _data[i * 3 + 2] << ")**2) ";
+  }
+  ss << std::endl;
+  return ss.str();
+}
+
+
+string MQ_1::report_laplace() {
+  std::stringstream ss;
+  for (int i = 0; i < _data.size() / 3; i++) {
+    double w = _data[i * 3];
+    double a = _data[i * 3 + 1];
+    double c = _data[i * 3 + 2];
+    ss << "+(" << w << ") * (1.0 / sqrt((x-" << c << ")**2 + " << a << "**2) - (x-" << c << ")**2 / ((x-" << c << ")**2 + " << a << "**2)**1.5)";
+  }
+  ss << std::endl;
+  return ss.str();
+}
