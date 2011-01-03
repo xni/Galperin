@@ -8,27 +8,12 @@
 const double Optimizer::FIRST_SCALE = 1.3;
 const int Optimizer::REPEAT_DIVIDING = 10;
 
-Optimizer::Optimizer(Function* J, int neurons, double accuracy, Restrictions restrictions) :
+Optimizer::Optimizer(Function* J, double accuracy) :
   _J(J),
-  _accuracy(accuracy),
-  _restrictions(restrictions),
-  _neurons(neurons) {
-  srand(time(0));
-  for (int i = 0; i < 2 * neurons * (2 + restrictions.dimensions()); i++) {
-    vector<double> c;
-    for (int j = 0; j < neurons; j++) {
-      c.push_back(restrictions.w_min() + (restrictions.w_max() - restrictions.w_min()) * \
-                  double(rand()) / RAND_MAX);
-      c.push_back(restrictions.a_min() + (restrictions.a_max() - restrictions.a_min()) * \
-                  double(rand()) / RAND_MAX);
-      for (int c_i = 0; c_i < restrictions.dimensions(); c_i++) {
-	c.push_back(restrictions.c_min(c_i) + \
-		    (restrictions.c_max(c_i) - restrictions.c_min(c_i)) * \
-		    double(rand()) / RAND_MAX);
-      }
-    }
-    _points.push_back(c);
-  }
+  _accuracy(accuracy) {
+  do {
+    _points.push_back((*_J).random_vector());
+  } while (_points.size() < _points[0].size());
   fill_cache();
 }
 
@@ -99,28 +84,21 @@ double Optimizer::max_difference() {
 vector<double> Optimizer::reflect(vector<double> gravity_center_cache, int worst_point, double current_scale) {
   vector<double> new_point;
   for (int j = 0; j < _points[0].size(); ++j) {
-    new_point.push_back(gravity_center_cache[j] + current_scale * (gravity_center_cache[j] - _points[worst_point][j]));
-    int type = j % (2 + _restrictions.dimensions());
-    if (type == 0) {
-      new_point[j] = _restrictions.acceptable_w(new_point[j]);
-    }
-    else if (type == 1) {
-      new_point[j] = _restrictions.acceptable_a(new_point[j]);
-    }
-    else {
-      new_point[j] = _restrictions.acceptable_c(new_point[j], type - 2);
-    }
+    new_point.push_back(\
+       gravity_center_cache[j] + \
+       current_scale * (gravity_center_cache[j] - _points[worst_point][j]));
   }
-  return new_point;
+  return (*_J).crop(new_point);
 }
 
-
+#include <iostream>
 bool Optimizer::update_point() {
   double current_scale = FIRST_SCALE;
-    
+
   vector<double> cache_gravity_center = gravity_center();
   int worst_point = worst_point_index();
-  
+  std::cout.precision(30);
+  std::cout << _cached_values[worst_point] << std::endl;
   for (int i = 0; i < REPEAT_DIVIDING; ++i) {
     vector<double> new_point = reflect(cache_gravity_center, worst_point, current_scale);
     if ((*_J)(new_point) > _cached_values[worst_point]) {
