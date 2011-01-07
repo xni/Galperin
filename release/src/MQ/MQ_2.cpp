@@ -19,7 +19,7 @@ double MQ_2::laplace(double x, double y) {
   double result = 0;
   for (int i = 0; i < _data.size() / 4; i++) {
     result += 2.0 * w(i) / core(i, x, y) \
-      - w(i) * (dx(i) * dx(i) + dy(i) * dy(i)) / pow(core(i, x, y), 3);
+      - w(i) * (dx(i, x) * dx(i, x) + dy(i, y) * dy(i, y)) / pow(core(i, x, y), 3);
   }
   return result;
 }

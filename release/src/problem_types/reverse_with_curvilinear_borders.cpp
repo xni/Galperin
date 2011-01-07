@@ -16,12 +16,12 @@ const double ReverseWithCurvilinearBorders::cx_min = 0.4;
 const double ReverseWithCurvilinearBorders::cx_max = 0.8;
 const double ReverseWithCurvilinearBorders::cy_min = -0.1;
 const double ReverseWithCurvilinearBorders::cy_max = 0.6;
+const double ReverseWithCurvilinearBorders::alpha = 2.0;
 
 ReverseWithCurvilinearBorders::ReverseWithCurvilinearBorders(double sigma) :
   Function(),
-  sigma(sigma) {
+  _sigma(sigma) {
   srand(time(0));
-  const double alpha = 2;
   // Г2
   int p_g2 = 20;
   double h_g2 = (1.0 / sqrt(2) - 0.5) / (p_g2 - 1);
@@ -50,8 +50,8 @@ ReverseWithCurvilinearBorders::ReverseWithCurvilinearBorders(double sigma) :
   int p_d = 25;
   for (int i = 0; i < p_d; i++) {
     double x = 0.5 + (1.0 / sqrt(2.0) - 0.5) * rand() / RAND_MAX;
-    double y = sqrt(0.5 - x * x);
-    double u = alpha * (x * x - y * y);
+    double y = sqrt(0.5 - x * x) * rand() / RAND_MAX;
+    double u = distribute(f(x, y), _sigma);
     points.push_back(x);
     points.push_back(y);
     values.push_back(u);
@@ -70,7 +70,7 @@ double ReverseWithCurvilinearBorders::operator()(vector<double> p) {
 }
 
 
-vector<double> FindSource::random_vector() {
+vector<double> ReverseWithCurvilinearBorders::random_vector() {
   vector<double> result;
   for (int i = 0; i < neurons; i++) {
     result.push_back(w_min + (w_max - w_min) * rand() / RAND_MAX);
@@ -82,7 +82,7 @@ vector<double> FindSource::random_vector() {
 }
 
 
-vector<double> FindSource::crop(vector<double> p) {
+vector<double> ReverseWithCurvilinearBorders::crop(vector<double> p) {
   vector<double> result;
   for (int i = 0; i < 4 * neurons; i++) {
     result.push_back(p[i]);
@@ -105,4 +105,35 @@ vector<double> FindSource::crop(vector<double> p) {
     }    
   }
   return result;
+}
+
+
+double ReverseWithCurvilinearBorders::max_error(vector<double> p) {
+  MQ_2 nn(p);
+  double result = -1.0;
+  int p_x = 100;
+  double h_x = (1.0 / sqrt(2) - 0.5) / (p_x - 1);
+  for (int i = 0; i < p_x; i++) {
+    double x = 0.5 + h_x * i;
+    double y = sqrt(0.5 - x * x);
+    double t = fabs(f(x, y) - nn.value(x, y));
+    if (t > result) {
+      result = t;
+    }
+  }
+  return result;
+}
+
+
+string ReverseWithCurvilinearBorders::report(vector<double> p) {
+  std::stringstream ss;
+  MQ_2 nn(p);
+  int p_x = 100;
+  double h_x = (1.0 / sqrt(2) - 0.5) / (p_x - 1);
+  for (int i = 0; i < p_x; i++) {
+    double x = 0.5 + h_x * i;
+    double y = sqrt(0.5 - x * x);
+    ss << x << "\t" << f(x, y) << "\t" << nn.value(x, y) << std::endl;
+  }
+  return ss.str();
 }

@@ -1,5 +1,5 @@
-#ifndef MQ_1_H
-#define MQ_1_H
+#ifndef MQ_2_H
+#define MQ_2_H
 
 #include <cmath>
 #include <vector>
@@ -11,7 +11,7 @@ using std::string;
 class MQ_2 {
  public:
   MQ_2(vector<double> data);
-  double value(double x);
+  double value(double x, double y);
   double laplace(double x, double y);
   string report_value();
  private:
@@ -31,3 +31,5 @@ class MQ_2 {
   double core(int i, double x, double y) {
     return sqrt(a(i) + dx(i, x) * dx(i, x) + dy(i, y) * dy(i, y)); }
 };
+
+#endif
