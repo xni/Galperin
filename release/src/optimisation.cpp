@@ -66,6 +66,7 @@ vector<double> Optimizer::gravity_center() {
   return result;
 }
 
+
 double Optimizer::max_difference() {
   double min_val = 0;
   double max_val = 0;
@@ -97,7 +98,7 @@ bool Optimizer::update_point() {
 
   vector<double> cache_gravity_center = gravity_center();
   int worst_point = worst_point_index();
-  //  std::cout << _cached_values[worst_point] << std::endl;
+  std::cerr << _cached_values[worst_point] << std::endl;
   for (int i = 0; i < REPEAT_DIVIDING; ++i) {
     vector<double> new_point = reflect(cache_gravity_center, worst_point, current_scale);
     if ((*_J)(new_point) > _cached_values[worst_point]) {
@@ -138,10 +139,10 @@ vector<double> Optimizer::optimize() {
   unsigned int operation = 0;
   while (true) {
     operation++;
-    if (operation % 5000 == 0) {
+    /*if (operation % 5000 == 0) {
       std::cout << operation / 5000 << "%" << std::endl;
-    }
-    if (is_enough() or operation > 500000) {
+      }*/
+    if (is_enough() || operation > 200000) {
       return _points[best_point_index()];
     }
     if (!update_point()) {

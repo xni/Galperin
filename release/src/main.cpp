@@ -1,17 +1,23 @@
 #include <vector>
 #include <iostream>
-#include "problem_types/reverse_with_curvilinear_borders.h"
+#include "problem_types/reverse_with_derivatives_borders.h"
 #include "optimisation.h"
 
 using std::vector;
 
 int main() {
-  for (double sigma = 0.07; sigma <= 0.151; sigma += 10.05) {
-    ReverseWithCurvilinearBorders* a = new ReverseWithCurvilinearBorders(sigma);
-    Optimizer o(a, 1e-14);
+  ReverseWithCurvilinearBorders* a;
+  double sigma;
+
+  while (true) {
+    sigma = 0.0;
+    int neurons = 20;
+    a = new ReverseWithCurvilinearBorders(sigma, neurons);
+    Optimizer o(a, 1e-8);
     vector<double> x = o.optimize();
     std::cout << a->report(x);
     delete a;
+    std::cout.flush();
     break;
   }
   return 0;

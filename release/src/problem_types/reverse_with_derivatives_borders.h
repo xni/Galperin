@@ -1,10 +1,11 @@
 /* Решение обратных задач в криволинейных областях */
 
-#ifndef REVERSE_WITH_CURVILINEAR
-#define REVERSE_WITH_CURVILINEAR
+#ifndef REVERSE_WITH_DERIVATIVES
+#define REVERSE_WITH_DERIVATIVES
 
 #include <vector>
 #include <string>
+#include <cmath>
 
 #include "../function.h"
 
@@ -24,9 +25,10 @@ class ReverseWithCurvilinearBorders : public Function {
   int _neurons;
   vector<double> points;
   vector<double> values;
-  vector<double> l_points;
-  vector<double> l_values;
-  double f(double x, double y) { return alpha * (x * x - y * y); };
+  vector<double> points_3;
+  vector<double> values_3;
+  double s(double x, double y) { return x * cos(y); }
+  double f(double x, double y) { return -1.0 * s(x, y); };
 
   const static int neurons;
   const static double w_min, w_max, a_min, a_max, cx_min, cx_max, cy_min, cy_max;

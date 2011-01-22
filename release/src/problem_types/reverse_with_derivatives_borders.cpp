@@ -1,8 +1,7 @@
 #include <cstdlib>
-#include <cmath>
 #include <ctime>
 
-#include "reverse_with_curvilinear_borders.h"
+#include "reverse_with_derivatives_borders.h"
 #include "../normal_distribution.h"
 
 #include "../MQ/MQ_2.h"
@@ -11,11 +10,11 @@
 const double ReverseWithCurvilinearBorders::w_min = -1000;
 const double ReverseWithCurvilinearBorders::w_max = 1000;
 const double ReverseWithCurvilinearBorders::a_min = 0;
-const double ReverseWithCurvilinearBorders::a_max = 3;
-const double ReverseWithCurvilinearBorders::cx_min = 0.4;
-const double ReverseWithCurvilinearBorders::cx_max = 0.8;
-const double ReverseWithCurvilinearBorders::cy_min = -0.1;
-const double ReverseWithCurvilinearBorders::cy_max = 0.6;
+const double ReverseWithCurvilinearBorders::a_max = 14;
+const double ReverseWithCurvilinearBorders::cx_min = -0.5;
+const double ReverseWithCurvilinearBorders::cx_max = 1.5;
+const double ReverseWithCurvilinearBorders::cy_min = -0.5;
+const double ReverseWithCurvilinearBorders::cy_max = 2.0;
 const double ReverseWithCurvilinearBorders::alpha = 2.0;
 
 ReverseWithCurvilinearBorders::ReverseWithCurvilinearBorders(double sigma, int neurons) :
@@ -23,25 +22,23 @@ ReverseWithCurvilinearBorders::ReverseWithCurvilinearBorders(double sigma, int n
   _sigma(sigma),
   _neurons(neurons) {
   srand(time(0));
-  // Г2
-  int p_g2 = 50;
-  double h_g2 = (1.0 / sqrt(2) - 0.5) / (p_g2 - 1);
-  for (int i = 0; i < p_g2; i++) {
-    double x = 0.5 + h_g2 * i;
+  // нижняя граница - значения
+  int p_b = 100;
+  for (int i = 0; i < p_b; i++) {
+    double x = double(rand()) / RAND_MAX;
     double y = 0.0;
-    double u = alpha * x * x;
+    double u = s(x, y);
     points.push_back(x);
     points.push_back(y);
     values.push_back(u);
   }
 
-  // Г3
-  int p_g3 = 50;
-  double h_g3 = 0.5 / (p_g3 - 1);
-  for (int i = 0; i < p_g3; i++) {
-    double x = 0.5;
-    double y = h_g3 * i;
-    double u = alpha * (0.25 - y * y);
+  // верхняя граница - значения
+  int p_t = 100;
+  for (int i = 0; i < p_t; i++) {
+    double x = double(rand()) / RAND_MAX;
+    double y = M_PI_2;
+    double u = s(x, y);
     points.push_back(x);
     points.push_back(y);
     values.push_back(u);
@@ -50,9 +47,9 @@ ReverseWithCurvilinearBorders::ReverseWithCurvilinearBorders(double sigma, int n
   // датчики
   int p_d = 10;
   for (int i = 0; i < p_d; i++) {
-    double x = 0.5 + (1.0 / sqrt(2.0) - 0.5) * rand() / RAND_MAX;
-    double y = sqrt(0.5 - x * x) * rand() / RAND_MAX;
-    double u = distribute(f(x, y), _sigma);
+    double x = double(rand()) / RAND_MAX;
+    double y = double(rand()) / RAND_MAX * M_PI_2;
+    double u = s(x, y);
     points.push_back(x);
     points.push_back(y);
     values.push_back(u);
@@ -61,24 +58,27 @@ ReverseWithCurvilinearBorders::ReverseWithCurvilinearBorders(double sigma, int n
   // точки проверки второй производной
   int p_l = 100;
   for (int i = 0; i < p_l; i++) {
-    double x = 0.5 + (1.0 / sqrt(2.0) - 0.5) * rand() / RAND_MAX;
-    double y = sqrt(0.5 - x * x) * rand() / RAND_MAX;
-    l_points.push_back(x);
-    l_points.push_back(y);
-    l_values.push_back(0.0);
+    double x = double(rand()) / RAND_MAX;
+    double y = double(rand()) / RAND_MAX * M_PI_2;
+    double u = f(x, y);
+    points_3.push_back(x);
+    points_3.push_back(y);
+    values_3.push_back(u);
   }
 }
 
-
+#include <iostream>
 double ReverseWithCurvilinearBorders::operator()(vector<double> p) {
   double result = 0;
   MQ_2 nn(p);
+  //  std::cout << "---------------------------------" << std::endl;
   for (int i = 0; i < values.size(); i++) {
+    //std::cout << points[2 * i] << " " << points[2 * i + 1] << " " << values[i] << " " << nn.value(points[2 * i], points[2 * i + 1]) << std::endl;
     double tmp = values[i] - nn.value(points[2 * i], points[2 * i + 1]);
     result += 10.0 * tmp * tmp;
   }
-  for (int i = 0; i < l_values.size(); i++) {
-    double tmp = nn.laplace(l_points[2 * i], l_points[1 + 2 * i]) - l_values[i];
+  for (int i = 0; i < values_3.size(); i++) {
+    double tmp = f(points_3[2 * i], points_3[2 * i + 1]) - nn.laplace(points_3[2 * i], points_3[2 * i + 1]);
     result += tmp * tmp;
   }
   return result;
@@ -143,16 +143,11 @@ double ReverseWithCurvilinearBorders::max_error(vector<double> p) {
 string ReverseWithCurvilinearBorders::report(vector<double> p) {
   std::stringstream ss;
   MQ_2 nn(p);
-  int p_x = 100;
-  double e = 0;
-  double h_x = (1.0 / sqrt(2) - 0.5) / (p_x - 1);
-  for (int i = 0; i < p_x; i++) {
-    double x = 0.5 + h_x * i;
-    double y = sqrt(0.5 - x * x);
-    //    ss << x << "\t" << f(x, y) << "\t" << nn.value(x, y) << std::endl;
-    double tmp = f(x, y) - nn.value(x, y);
-    e += tmp * tmp;
+  double y = 0.0;
+  double x = 1.0;
+  while (y < M_PI_2) {
+    ss << y << " " << s(x, y) << " " << nn.value(x, y) << std::endl;
+    y += 0.1;
   }
-  ss << (*this)(p) << " " << e << std::endl;
   return ss.str();
 }
