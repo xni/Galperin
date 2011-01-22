@@ -28,7 +28,8 @@ double MQ_2::laplace(double x, double y) {
 string MQ_2::report_value() {
   std::stringstream ss;
   for (int i = 0; i < _data.size() / 4; i++) {
-    ss << "+(" << w(i) << ")*sqrt(" << a(i) << "**2 + (" << cx(i) << "-x)**2 + (" << cy(i) << "-y)**2) ";
+    //    ss << "+(" << w(i) << ")*sqrt(" << a(i) << "**2 + (" << cx(i) << "-x)**2 + (" << cy(i) << "-y)**2) ";
+    ss << w(i) << " " << a(i) << " " << cx(i) << " " << cy(i) << std::endl;
   }
   ss << std::endl;
   return ss.str();

@@ -11,7 +11,7 @@ int main() {
 
   while (true) {
     sigma = 0.0;
-    int neurons = 20;
+    int neurons = 4;
     a = new ReverseWithCurvilinearBorders(sigma, neurons);
     Optimizer o(a, 1e-8);
     vector<double> x = o.optimize();

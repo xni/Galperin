@@ -10,7 +10,7 @@
 const double ReverseWithCurvilinearBorders::w_min = -1000;
 const double ReverseWithCurvilinearBorders::w_max = 1000;
 const double ReverseWithCurvilinearBorders::a_min = 0;
-const double ReverseWithCurvilinearBorders::a_max = 14;
+const double ReverseWithCurvilinearBorders::a_max = 3;
 const double ReverseWithCurvilinearBorders::cx_min = -0.5;
 const double ReverseWithCurvilinearBorders::cx_max = 1.5;
 const double ReverseWithCurvilinearBorders::cy_min = -0.5;
@@ -149,5 +149,6 @@ string ReverseWithCurvilinearBorders::report(vector<double> p) {
     ss << y << " " << s(x, y) << " " << nn.value(x, y) << std::endl;
     y += 0.1;
   }
+  ss << nn.report_value();
   return ss.str();
 }

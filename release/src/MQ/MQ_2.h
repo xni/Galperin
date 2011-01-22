@@ -29,7 +29,7 @@ class MQ_2 {
   double dy(int i, double y) {
     return cy(i) - y; }
   double core(int i, double x, double y) {
-    return sqrt(a(i) + dx(i, x) * dx(i, x) + dy(i, y) * dy(i, y)); }
+    return sqrt(a(i) * a(i) + dx(i, x) * dx(i, x) + dy(i, y) * dy(i, y)); }
 };
 
 #endif
